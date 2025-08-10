@@ -1,6 +1,6 @@
-struct AzEl{T} <: PlaneWave where T <: AbstractMatrix
+struct AzEl{T<:AbstractMatrix} <: PlaneWave
     coords::T
-    function AzEl(coords::T) where T <: AbstractMatrix
+    function AzEl(coords::AbstractMatrix)
         # coords = [azimuths...; elevations...] 2xD matrix
         M, D = size(coords)
 
@@ -18,9 +18,8 @@ struct AzEl{T} <: PlaneWave where T <: AbstractMatrix
         return new{typeof(padded_coords)}(padded_coords)
     end
 end
-
 # list of azimuths
-function AzEl(azimuths::T) where T <: AbstractVector
+function AzEl(azimuths::AbstractVector)
     return AzEl(reshape(azimuths, 1, :))
 end
 

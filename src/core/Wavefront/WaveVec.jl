@@ -1,6 +1,6 @@
-struct WaveVec{T} <: PlaneWave where T <: AbstractMatrix
+struct WaveVec{T<:AbstractMatrix} <: PlaneWave
     coords::T
-    function WaveVec(coords::T) where T <: AbstractMatrix
+    function WaveVec(coords::AbstractMatrix)
         # coords = [kx...; ky...; kz...] 3xD matrix
 
         M, D = size(coords)
@@ -14,7 +14,7 @@ struct WaveVec{T} <: PlaneWave where T <: AbstractMatrix
         if M == 1
             fill!(@view(padded_coords[2:3, :]), zero(eltype(padded_coords)))
         elseif M==2
-            fill!(@view(padded_coords[3:3, :]), zero(eltype(padded_coords)))
+            fill!(@view(padded_coords[3, :]), zero(eltype(padded_coords)))
         end
 
         return new{typeof(padded_coords)}(padded_coords)
@@ -22,7 +22,7 @@ struct WaveVec{T} <: PlaneWave where T <: AbstractMatrix
 end
 
 # list of kx
-function WaveVec(kx_vec::T) where T <: AbstractVector
+function WaveVec(kx_vec::AbstractVector)
     return WaveVec(reshape(kx_vec, 1, :))
 end
 
