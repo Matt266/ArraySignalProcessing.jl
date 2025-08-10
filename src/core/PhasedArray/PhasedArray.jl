@@ -1,12 +1,12 @@
 abstract type AbstractPhasedArray end
 
-struct PhasedArray <: AbstractPhasedArray
-    manifold::AbstractArrayManifold
+struct PhasedArray{T<:AbstractArrayManifold} <: AbstractPhasedArray
+    manifold::T
 end
 
-struct NestedArray <: AbstractPhasedArray
-    elements::PhasedArray
-    subarrays::Vector{<:AbstractPhasedArray}
+struct NestedArray{E<:AbstractPhasedArray, S<:AbstractVector{<:AbstractPhasedArray}} <: AbstractPhasedArray
+    elements::E
+    subarrays::S
 end
 
 function Base.length(pa::PhasedArray)
@@ -21,6 +21,7 @@ function steer(pa::PhasedArray, args...; kwargs...)
     return pa.manifold(args...; kwargs...)
 end
 
+#TODO: rework the large reduce() line
 function steer(pa::NestedArray, args...; kwargs...)
     v_super = steer(pa.elements, args...; kwargs...)
     v_sub = map(sa -> steer(sa, args...; kwargs...), pa.subarrays)

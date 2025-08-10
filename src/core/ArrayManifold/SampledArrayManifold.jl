@@ -61,7 +61,7 @@ end
 # Currently will fail if called with other format than the sampled one,
 # which for now is the intended behaviour 
 # TODO: probably in each Wavefront constructer: constrain values (e.g., azimuth to -π...+π and elevation to 0...π).
-function (a::SampledArrayManifold)(f, angles::Wavefront; c=c_0)
+function (a::SampledArrayManifold)(angles::Wavefront, f, c=c_0)
     angles = convert(typeof(a.coords_grid), angles)
 
     # matrix of tuples: each row an element index e, each col an column from the angles 
