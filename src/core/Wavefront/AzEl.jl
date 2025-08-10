@@ -19,12 +19,12 @@ struct AzEl{T} <: PlaneWave where T <: AbstractMatrix
     end
 end
 
-# list of azimtuhs
+# list of azimuths
 function AzEl(azimuths::T) where T <: AbstractVector
     return AzEl(reshape(azimuths, 1, :))
 end
 
-# list of azimtuhs
+# list of azimuths
 function AzEl(azimuths...)
     return AzEl(collect(promote(azimuths...)))
 end
