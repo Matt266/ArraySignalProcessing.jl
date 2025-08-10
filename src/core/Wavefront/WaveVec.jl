@@ -1,24 +1,23 @@
 struct WaveVec{T} <: PlaneWave where T <: AbstractMatrix
     coords::T
     function WaveVec(coords::T) where T <: AbstractMatrix
-        # coords = [kx; ky; kz] 3xD matrix
+        # coords = [kx...; ky...; kz...] 3xD matrix
 
         M, D = size(coords)
-        M <= 0 && throw(DomainError(M, "'coords' must have at least one row."))
-        M >= 4 && throw(DomainError(M, "'coords' must have at most three rows: [kx...; ky...; kz...]"))
-        D <= 0 && throw(DomainError(D, "'coords' must have at least one column"))
+        M <= 0 && throw(DimensionMismatch("'coords' has size $(size(coords)) but must have at least one row."))
+        M >= 4 && throw(DimensionMismatch("'coords' has size $(size(coords)) but must have at most three rows: [kx...; ky...; kz...]"))
+        D <= 0 && throw(DimensionMismatch("'coords' has size $(size(coords)) but must have at least one column"))
+
+        padded_coords = similar(coords, 3, D)
+        padded_coords[1:M, :] = coords
 
         if M == 1
-            padding = similar(coords, 2, D)
-            fill!(padding, zero(eltype(coords)))
-            coords = vcat(coords, padding)
+            fill!(@view(padded_coords[2:3, :]), zero(eltype(padded_coords)))
         elseif M==2
-            padding = similar(coords, 1, D)
-            fill!(padding, zero(eltype(coords)))
-            coords = vcat(coords, padding)
+            fill!(@view(padded_coords[3:3, :]), zero(eltype(padded_coords)))
         end
 
-        return new{typeof(coords)}(coords)
+        return new{typeof(padded_coords)}(padded_coords)
     end
 end
 
@@ -28,6 +27,6 @@ function WaveVec(kx_vec::T) where T <: AbstractVector
 end
 
 # list of kx
-function WaveVec(kx::T...) where T <: Number
-    return WaveVec(collect(kx))
+function WaveVec(kx...)
+    return WaveVec(collect(promote(kx...)))
 end
