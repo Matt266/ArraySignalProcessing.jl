@@ -23,7 +23,7 @@ R. Roy and T. Kailath, ‘ESPRIT-estimation of signal parameters via rotational 
 
 H. L. Van Trees, Optimum array processing. Nashville, TN: John Wiley & Sons, 2002.
 """
-function esprit(Rzz, Δ, d, f, c=c_0; TLS = true, SVD = false, side = :left)
+function esprit(Rzz, Δ, d, f, c=c_0; TLS = true, side = :left)
     # number of sensors in the array (p)
     # and the subarrays (ps)
     p = size(Rzz, 1)
@@ -39,11 +39,8 @@ function esprit(Rzz, Δ, d, f, c=c_0; TLS = true, SVD = false, side = :left)
     # estimate Φ by exploiting the array symmetry
     if(TLS)
         # TLS-ESPRIT
-        if SVD # mainly for usage with cuda
-            E, _ = svd([Ex Ey]'*[Ex Ey])
-        else
-            E = eigvecs([Ex Ey]'*[Ex Ey], sortby= λ -> -abs(λ))
-        end
+        eigs = eigen(Hermitian([Ex Ey]'*[Ex Ey]))
+        E = eigs.vectors[:, sortperm(abs.(eigs.values); rev=true)]
         
         E12 = E[1:d, (1:d).+d]
         E22 = E[(1:d).+d, (1:d).+d]
