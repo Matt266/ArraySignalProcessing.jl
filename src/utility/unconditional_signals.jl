@@ -40,11 +40,12 @@ function unconditional_signals(pa::AbstractPhasedArray, Rss, N, SNR, angles, f, 
 
     A = steer(pa, angles, f, c; kwargs...)
     s = unconditional_signals(Rss, N; norm=norm)
+    s = convert(typeof(A), s)
 
     # if sum of signals is not normed to unit power 
     # amplify noise by signal power to reach desired SNR  
     nvar = snr2nvar(SNR) * (norm ? 1 : tr(Rss))
     n = sqrt(nvar/2)*(randn(M, N) + 1im*randn(M, N))
-   
+    n = convert(typeof(A), n)
     return A*s+n
 end
