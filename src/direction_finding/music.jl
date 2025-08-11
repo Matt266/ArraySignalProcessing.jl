@@ -18,7 +18,7 @@ H. Krim and M. Viberg, ‘Two decades of array signal processing research: the p
 """
 function music(pa::AbstractPhasedArray, Rxx, d, angles, f, c=c_0; W=I, kwargs...)
     eigs = eigen(Rxx)
-    U = eigs.vectors[:, sortperm(eigs.values; rev=true)]
+    U = eigs.vectors[:, sortperm(abs.(eigs.values); rev=true)]
     Un = U[:, d+1:size(U)[2]]
 
     A = steer(pa, angles, f, c; kwargs...)

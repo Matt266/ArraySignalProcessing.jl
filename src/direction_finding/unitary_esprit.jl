@@ -21,7 +21,7 @@ References:
 -----------
 M. Haardt and J. A. Nossek, ‘Unitary ESPRIT: how to obtain increased estimation accuracy with a reduced computational burden’, IEEE Trans. Signal Process., vol. 43, no. 5, pp. 1232–1242, May 1995.
 """
-function unitary_esprit(X, J1, Δ, d, f; c=c_0, TLS = true, side = :left)
+function unitary_esprit(X, J1, Δ, d, f, c=c_0; TLS = true, side = :left)
     # NxN exchange matrix
     II(N) = begin
         return rotl90(Matrix(I,N,N))
@@ -29,7 +29,7 @@ function unitary_esprit(X, J1, Δ, d, f; c=c_0, TLS = true, side = :left)
     
     # unitary matrices
     Q(N) = begin
-        @assert N>=2
+        N>=2 || throw(DomainError("N ($(N)) must be >= 2"))
         n = Int(floor(N/2))
         if N%2 == 0
             # N even
@@ -45,12 +45,13 @@ function unitary_esprit(X, J1, Δ, d, f; c=c_0, TLS = true, side = :left)
     K1 = Q(m)'*(J1+II(m)*J1*II(M))*Q(M)
     K2 = Q(m)'*1im*(J1-II(m)*J1*II(M))*Q(M)
 
-    Y = Q(M)'*X
+    Y = convert(typeof(X), Q(M)')*X
+
     U, _ = svd([real(Y) imag(Y)])
     Es = U[:,1:d]
 
-    C1 = K1*Es
-    C2 = K2*Es
+    C1 = convert(typeof(X), K1)*Es
+    C2 = convert(typeof(X), K2)*Es
 
     if(TLS)
         # TLS solution
@@ -63,7 +64,7 @@ function unitary_esprit(X, J1, Δ, d, f; c=c_0, TLS = true, side = :left)
         Ψ = C1 \ C2
     end
 
-    Φ = eigvals(Ψ, sortby= λ -> -abs(λ))
+    Φ = eigvals(Array(Ψ), sortby= λ -> -abs(λ))
 
     # calculate the directions of arrival (DoAs) from Φ
     Μ = 2atan.(real(Φ))

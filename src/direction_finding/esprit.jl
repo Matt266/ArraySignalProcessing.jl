@@ -23,23 +23,31 @@ R. Roy and T. Kailath, ‘ESPRIT-estimation of signal parameters via rotational 
 
 H. L. Van Trees, Optimum array processing. Nashville, TN: John Wiley & Sons, 2002.
 """
-function esprit(Rzz, Δ, d, f; c=c_0, TLS = true, side = :left)
+function esprit(Rzz, Δ, d, f, c=c_0; TLS = true, SVD = false, side = :left)
     # number of sensors in the array (p)
     # and the subarrays (ps)
     p = size(Rzz)[1]
     ps = Int(p/2)
 
-    U = eigvecs(Rzz, sortby= λ -> -abs(λ))
+    if SVD
+        U, _ = svd(Rzz)
+    else
+        U = eigvecs(Rzz, sortby= λ -> -abs(λ))
+    end
 
     Es = U[:,1:d]
     Ex = Es[(1:ps),:]
     Ey = Es[(1:ps).+(ps),:]
 
-
     # estimate Φ by exploiting the array symmetry
     if(TLS)
         # TLS-ESPRIT
-        E = eigvecs([Ex Ey]'*[Ex Ey], sortby= λ -> -abs(λ))
+        if SVD
+            E, _ = svd([Ex Ey]'*[Ex Ey])
+        else
+            E = eigvecs([Ex Ey]'*[Ex Ey], sortby= λ -> -abs(λ))
+        end
+        
         E12 = E[1:d, (1:d).+d]
         E22 = E[(1:d).+d, (1:d).+d]
         Ψ = -E12*inv(E22)
@@ -48,7 +56,7 @@ function esprit(Rzz, Δ, d, f; c=c_0, TLS = true, side = :left)
         Ψ = Ex \ Ey
     end
 
-    Φ = eigvals(Ψ, sortby= λ -> -abs(λ))
+    Φ = eigvals(Array(Ψ), sortby= λ -> -abs(λ))
 
     # calculate the directions of arrival (DoAs) from Φ
     k = (2π*f)/c
