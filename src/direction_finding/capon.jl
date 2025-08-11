@@ -21,8 +21,8 @@ References:
 -----------
 H. Krim and M. Viberg, ‘Two decades of array signal processing research: the parametric approach’, IEEE Signal Process. Mag., vol. 13, no. 4, pp. 67–94, Jul. 1996.
 """
-function capon(pa::AbstractPhasedArray, Rxx, f, angles; c=c_0, coords=:azel)
-    A = steer(pa, f, angles; c=c, coords=coords)
+function capon(pa::AbstractPhasedArray, Rxx, angles, f, c=c_0; kwargs...)
+    A = steer(pa, angles, f, c; kwargs...)
     #P = 1/(a'*inv(Rxx)*a)
     P = vec(1 ./ sum(conj(A) .* (inv(Rxx) * A), dims=1))
     return real(P)
