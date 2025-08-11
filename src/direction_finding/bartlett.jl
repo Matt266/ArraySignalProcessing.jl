@@ -14,23 +14,15 @@ arguments:
     angles: 1xD or 2xD matrix of steering directions.
         - If 1xD: azimuth angles in radians, elevation assumed zero.
         - If 2xD: [azimuth; elevation] for D directions in radians.
-    w: vector of taper weights for the array (e.g., chebyshev window) 
     c: propagation speed of the wave
+    W: diagonal matrix of taper weights for the array (e.g., chebyshev window) 
 
 References:
 -----------
 H. Krim and M. Viberg, ‘Two decades of array signal processing research: the parametric approach’, IEEE Signal Process. Mag., vol. 13, no. 4, pp. 67–94, Jul. 1996.
 """
-function bartlett(pa::AbstractPhasedArray, Rxx, f, angles; w=nothing, c=c_0, coords=:azel)
-    
-    if isnothing(w)
-        W = I
-    else 
-        assert(length(w) == length(pa))
-        W = diagm(vec(w))
-    end
-
-    A = steer(pa, f, angles; c=c, coords=coords)
+function bartlett(pa::AbstractPhasedArray, Rxx, angles, f, c=c_0; W=I, kwargs...)
+    A = steer(pa, angles, f, c; kwargs...)
 
     # a'*W*Rxx*W'*a
     P = vec(sum(conj(A) .* (W*Rxx*W' * A), dims=1))

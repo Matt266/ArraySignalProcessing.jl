@@ -34,3 +34,20 @@ function lasso(Y, A, λ=1e-2; maxit=100, tol=1e-6, kwargs...)
     solution, _ = ffb(x0=X0, f=f, g=g)
     return vec(sum(abs2, solution, dims=2))
 end
+
+"""
+M: ULA length
+N: Number Snapshots
+SNR: SNR in dB 
+
+References:
+-----------
+Sparse Methods for Direction-of-Arrival Estimation. Zai Yang, Jian Li, Petre Stoica, and Lihua Xie. January 10, 2017
+Optimal λ for ULA (p.45; below eq. (190))
+Where source [85] is referenced for that:
+    Y. Li, Y. Chi, Off-the-grid line spectrum denoising and estimation with multiple measurement vectors,
+    IEEE Transactions on Signal Processing 64 (5) (2016) 1257–1269.
+"""
+function λ_opt(M, N, SNR)
+    return sqrt(M*(N+log(M)+sqrt(2N*log(M)))*sqrt(snr2nvar(SNR)))
+end
