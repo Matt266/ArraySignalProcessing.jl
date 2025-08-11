@@ -23,9 +23,9 @@ H. L. Van Trees, Optimum array processing. Nashville, TN: John Wiley & Sons, 200
 """
 function (a::AbstractArrayManifold)(angles, f, c=c_0; coords=:azel)
     if coords == :azel
-        return a(AzEl(angles), f, c=c)
+        return a(AzEl(angles), f, c)
     elseif coords == :k
-        return a(WaveVec(angles), f, c=c)
+        return a(WaveVec(angles), f, c)
     else
         throw(DomainError("'coords' must be ':azel' or ':k'; got: '$(coords)'"))
     end
