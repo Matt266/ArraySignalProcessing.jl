@@ -26,14 +26,11 @@ H. L. Van Trees, Optimum array processing. Nashville, TN: John Wiley & Sons, 200
 function esprit(Rzz, Δ, d, f, c=c_0; TLS = true, SVD = false, side = :left)
     # number of sensors in the array (p)
     # and the subarrays (ps)
-    p = size(Rzz)[1]
+    p = size(Rzz, 1)
     ps = Int(p/2)
 
-    if SVD
-        U, _ = svd(Rzz)
-    else
-        U = eigvecs(Rzz, sortby= λ -> -abs(λ))
-    end
+    eigs = eigen(Rzz)
+    U = eigs.vectors[:, sortperm(abs.(eigs.values); rev=true)]
 
     Es = U[:,1:d]
     Ex = Es[(1:ps),:]
@@ -42,7 +39,7 @@ function esprit(Rzz, Δ, d, f, c=c_0; TLS = true, SVD = false, side = :left)
     # estimate Φ by exploiting the array symmetry
     if(TLS)
         # TLS-ESPRIT
-        if SVD
+        if SVD # mainly for usage with cuda
             E, _ = svd([Ex Ey]'*[Ex Ey])
         else
             E = eigvecs([Ex Ey]'*[Ex Ey], sortby= λ -> -abs(λ))
