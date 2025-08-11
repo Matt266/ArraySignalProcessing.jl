@@ -18,7 +18,7 @@ function unconditional_signals(Rss, N; norm=true)
     d = size(Rss, 1)
 
     # generate random signals
-    w = (randn(d, N) + 1im*randn(d, N))/sqrt(2)
+    w = (randn(d, N) + 1im.*randn(d, N))/sqrt(2)
 
     # normalize so source power adds up to unit power
     if norm
@@ -28,4 +28,23 @@ function unconditional_signals(Rss, N; norm=true)
     # correlate sources 
     s = cholesky(Rss).L * w
     return s
+end
+
+# assuming unit power signal, converts SNR in dB to noise variance σₙ²
+function snr2nvar(SNR)
+    return 10^-(SNR/10)
+end
+
+function unconditional_signals(pa::AbstractPhasedArray, Rss, N, SNR, angles, f, c=c_0; norm=true, kwargs...)
+    M = length(pa)
+
+    A = steer(pa, angles, f, c; kwargs...)
+    s = unconditional_signals(Rss, N; norm=norm)
+
+    # if sum of signals is not normed to unit power 
+    # amplify noise by signal power to reach desired SNR  
+    nvar = snr2nvar(SNR) * (norm ? 1 : tr(Rss))
+    n = sqrt(nvar/2)*(randn(M, N) + 1im*randn(M, N))
+   
+    return A*s+n
 end

@@ -16,7 +16,7 @@ H. L. Van Trees, Optimum array processing. Nashville, TN: John Wiley & Sons, 200
 """
 function aic(Rxx, K)
     N = size(Rxx, 1)
-    λ = real(eigvals(Rxx, sortby= λ -> -abs(λ)))
+    λ = sort(real(eigen(Rxx).values), rev=true)
     λ = max.(λ, 0)
 
     aic = zeros(N)
