@@ -1,5 +1,6 @@
 include("bartlett.jl")
 include("capon.jl")
+include("music.jl")
 include("esprit.jl")
 include("unitary_esprit.jl")
 include("wsf.jl")

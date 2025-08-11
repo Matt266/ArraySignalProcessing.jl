@@ -16,14 +16,16 @@ References:
 -----------
 H. Krim and M. Viberg, ‘Two decades of array signal processing research: the parametric approach’, IEEE Signal Process. Mag., vol. 13, no. 4, pp. 67–94, Jul. 1996.
 """
-function music(pa::AbstractPhasedArray, Rxx, d, f, angles; c=c_0, coords=:azel)
-    U = eigvecs(Rxx, sortby= λ -> -abs(λ))
-
+function music(pa::AbstractPhasedArray, Rxx, d, angles, f, c=c_0; W=I, kwargs...)
+    eigs = eigen(Rxx)
+    U = eigs.vectors[:, sortperm(eigs.values; rev=true)]
     Un = U[:, d+1:size(U)[2]]
 
-    A = steer(pa, f, angles; c=c, coords=coords)
+    A = steer(pa, angles, f, c; kwargs...)
 
-    #P = a'*a/(a'*Un*Un'*a)
-    P = vec(sum(abs2, A; dims=1) ./ sum(abs2, Un' * A; dims=1))
+    # weighted music
+    #P = a'*a/(a'*Un*W*Un'*a)
+    B = Un'*A
+    P = vec(sum(abs2, A; dims=1) ./ sum(conj(B) .* (W * B); dims=1))
     return real(P)
 end
