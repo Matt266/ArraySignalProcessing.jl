@@ -21,14 +21,13 @@ function Base.length(pa::NestedArray)
     return sum(length.(pa.subarrays))
 end
 
-function steer(pa::PhasedArray, args...; kwargs...)
-    return pa.manifold(args...; kwargs...)
+function steer(pa::PhasedArray, angles, f, c=c_0; kwargs...)
+    return pa.manifold(angles, f, c; kwargs...)
 end
 
-#TODO: rework the large reduce() line
-function steer(pa::NestedArray, args...; kwargs...)
-    v_super = steer(pa.elements, args...; kwargs...)
-    v_sub = map(sa -> steer(sa, args...; kwargs...), pa.subarrays)
+function steer(pa::NestedArray, angles, f, c=c_0; kwargs...)
+    v_super = steer(pa.elements, angles, f, c; kwargs...)
+    v_sub = map(sa -> steer(sa, angles, f, c; kwargs...), pa.subarrays)
 
     v_sub_stacked = vcat(v_sub...)
     indices = reduce(vcat, [fill(i, l) for (i, l) in enumerate(length.(pa.subarrays))])
