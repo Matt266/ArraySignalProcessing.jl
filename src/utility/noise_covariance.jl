@@ -10,9 +10,19 @@ W. Herbordt, Sound capture for human / machine interfaces, 2005th ed. Berlin, Ge
 function diffnoise(pa::AbstractPhasedArray, σ², f, c=c_0)
     ω = 2π*f
     k = ω/c
-    p(x, i) = [e for e in x.manifold.r[:,i]] 
-    si(x) = sinc(x/π)
-    Γ(x, n, m, k) = si(k*norm(p(x,m)-p(x,n)))
+
+    # si(x) = sinc(x/π)
+    si(x) = sinc.(x ./ π)
+
+    #p(x, i) = [e for e in x.manifold.r[:,i]] 
+    #Γ(x, n, m, k) = si(k*norm(p(x,m)-p(x,n)))
+    function Γ(n, m)
+        d = @view(pa.manifold.r[:, m]) .- @view(pa.manifold.r[:, n])
+        si(k * norm(d))
+    end
+
     n = 1:length(pa)
-    return σ²*Γ.(Ref(pa), n, n', Ref(k))
+
+    #σ²*Γ.(Ref(pa), n, n', Ref(k))
+    return σ² .* [Γ(i, j) for i in n, j in n] 
 end
