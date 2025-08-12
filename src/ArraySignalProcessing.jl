@@ -14,6 +14,7 @@ using ProximalOperators
 using Interpolations
 using PRIMA
 using Peaks
+using Zygote
 
 export PhasedArray, IsotropicArray, PhasedArray, NestedArray, steer, IsotropicArrayManifold, SampledArrayManifold,
         AzEl, WaveVec,

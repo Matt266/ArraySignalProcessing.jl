@@ -8,11 +8,10 @@ struct AzEl{T<:AbstractMatrix} <: PlaneWave
         M >= 3 && throw(DimensionMismatch("'coords' has size $(size(coords)) but must have at most two rows: [azimuths...; elevations...]"))
         D <= 0 && throw(DimensionMismatch("'coords' has size $(size(coords)) but must have at least one column"))
 
-        padded_coords = similar(coords, 2, D)
-        padded_coords[1:M, :] = coords
-
         if M == 1
-            fill!(@view(padded_coords[2, :]), zero(eltype(padded_coords)))
+            padded_coords = vcat(coords, zeros(eltype(coords), 1, D))
+        else
+            padded_coords = vcat(coords, zeros(eltype(coords), 0, D))
         end
 
         return new{typeof(padded_coords)}(padded_coords)

@@ -12,9 +12,11 @@ struct WaveVec{T<:AbstractMatrix} <: PlaneWave
         padded_coords[1:M, :] = coords
 
         if M == 1
-            fill!(@view(padded_coords[2:3, :]), zero(eltype(padded_coords)))
+            padded_coords = vcat(coords, zeros(eltype(coords), 2, D))
         elseif M==2
-            fill!(@view(padded_coords[3, :]), zero(eltype(padded_coords)))
+            padded_coords = vcat(coords, zeros(eltype(coords), 1, D))
+        else
+            padded_coords = vcat(coords, zeros(eltype(coords), 0, D))
         end
 
         return new{typeof(padded_coords)}(padded_coords)

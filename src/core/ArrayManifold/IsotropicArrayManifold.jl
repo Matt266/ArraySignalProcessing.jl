@@ -11,9 +11,11 @@ struct IsotropicArrayManifold{T<:AbstractMatrix} <: AbstractArrayManifold
         padded_r[1:M, :] = r
 
         if M == 1
-            fill!(@view(padded_r[2:3, :]), zero(eltype(padded_r)))
+            padded_r = vcat(r, zeros(eltype(r), 2, D))
         elseif M == 2
-            fill!(@view(padded_r[3, :]), zero(eltype(padded_r)))
+            padded_r = vcat(r, zeros(eltype(r), 1, D))
+        else
+            padded_r = vcat(r, zeros(eltype(r), 0, D))
         end
 
         return new{typeof(padded_r)}(padded_r) 

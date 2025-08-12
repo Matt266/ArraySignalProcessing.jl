@@ -23,12 +23,17 @@ H. Krim and M. Viberg, ‘Two decades of array signal processing research: the p
 
 M. Pesavento, M. Trinh-Hoang, and M. Viberg, ‘Three More Decades in Array Signal Processing Research: An optimization and structure exploitation perspective’, IEEE Signal Process. Mag., vol. 40, no. 4, pp. 92–106, Jun. 2023.
 """
-function wsf(pa::AbstractPhasedArray, Rxx, DoAs, f; c=c_0, coords=:azel, optimizer=:prima, maxiters=1e3)
+function wsf(pa::AbstractPhasedArray, Rxx, DoAs, f, c=c_0;
+            optimizer = Optim.GradientDescent(), steer_kwargs=(), problem_kwargs=(), solve_kwargs=())
     p = pa, Rxx, f, c
     wsf_cost = function(angles, p)
         pa, Rxx, f, c = p
         d = size(angles, 2)
-        Λ, U = eigen(Rxx, sortby= λ -> -abs(λ))
+
+        eigs = eigen(Rxx)
+        idx = sortperm(abs.(eigs.values); rev=true)
+        Λ = eigs.values[idx]
+        U = eigs.vectors[:, idx]
 
         Λs = diagm(Λ[1:d])
         Λn = diagm(Λ[d+1:length(Λ)])
@@ -43,28 +48,16 @@ function wsf(pa::AbstractPhasedArray, Rxx, DoAs, f; c=c_0, coords=:azel, optimiz
         W = Λest^2*inv(Λs)
 
         #A = hcat(steerphi.(Ref(pa), f, ϕ; fs=fs, c=c, direction=Incoming)...)
-        A = steer(pa, f, angles; c=c, coords=coords)
+        A = steer(pa, angles, f, c; steer_kwargs...)
         #PA = A*inv(A'*A)*A'
-        PA = A*pinv(A)
+        PA = A*pinv(A) #TODO: check why the pinv() call here throws an error with CuArrys
 
         cost =  tr((I-PA)*Us*W*Us')
         return real(cost)
     end
 
-    if optimizer == :prima
-        # prima does not require parameters 
-        # but starting points must be a vector
-        shape = size(DoAs)
-        function obj_func(angles)
-            return wsf_cost(reshape(angles, shape), p)
-        end
-        result, _ = prima(obj_func, vec(DoAs))
-        return reshape(result, shape)
-    else
-        # e.g., optimizer=NelderMead()
-        f = OptimizationFunction(wsf_cost, Optimization.AutoForwardDiff())
-        p = OptimizationProblem(f, DoAs, p)
-        s = solve(p, optimizer; maxiters=maxiters)
-        return s.u
-    end
+    f = OptimizationFunction(wsf_cost, Optimization.AutoZygote())
+    p = OptimizationProblem(f, DoAs, p; problem_kwargs...)
+    s = solve(p, optimizer; solve_kwargs...)
+    return s.u
 end
