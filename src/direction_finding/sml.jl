@@ -20,14 +20,15 @@ H. Krim and M. Viberg, ‘Two decades of array signal processing research: the p
 
 H. L. Van Trees, Optimum array processing. Nashville, TN: John Wiley & Sons, 2002.
 """
-function sml(pa::AbstractPhasedArray, Rxx, DoAs, f; c=c_0, coords=:azel, optimizer=:prima, maxiters=1e3)
+function sml(pa::AbstractPhasedArray, Rxx, DoAs, f, c=c_0;
+            optimizer = Optim.GradientDescent(), steer_kwargs=(), problem_kwargs=(), solve_kwargs=())
     p = pa, Rxx, f, c
     sml_cost = function(angles, p)
         pa, Rxx, f, c = p
 
-        A = steer(pa, f, angles; c=c, coords=coords)
+        A = steer(pa, angles, f, c; steer_kwargs...)
         #PA = A*inv(A'*A)*A'
-        PA = A*pinv(A)
+        PA = A*pinv(A) #TODO: check why the pinv() call here throws an error with CuArrys
 
         M = size(Rxx, 1)
         d = size(angles, 2)
@@ -37,20 +38,8 @@ function sml(pa::AbstractPhasedArray, Rxx, DoAs, f; c=c_0, coords=:azel, optimiz
         return real(cost)
     end
 
-    if optimizer == :prima
-        # prima does not require parameters 
-        # but starting points must be a vector
-        shape = size(DoAs)
-        function obj_func(angles)
-            return sml_cost(reshape(angles, shape), p)
-        end
-        result, _ = prima(obj_func, vec(DoAs))
-        return reshape(result, shape)
-    else
-        # e.g., optimizer=NelderMead()
-        f = OptimizationFunction(sml_cost, Optimization.AutoForwardDiff())
-        p = OptimizationProblem(f, DoAs, p)
-        s = solve(p, optimizer; maxiters=maxiters)
-        return s.u
-    end
+    f = OptimizationFunction(sml_cost, Optimization.AutoZygote())
+    p = OptimizationProblem(f, DoAs, p; problem_kwargs...)
+    s = solve(p, optimizer; solve_kwargs...)
+    return s.u
 end
