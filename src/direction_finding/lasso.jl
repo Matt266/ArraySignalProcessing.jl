@@ -1,9 +1,42 @@
-# for solving lasso with LeastSquares from ProximalOperators.jl
-function value_and_gradient(f::ProximalOperators.LeastSquares, X)
-    val = f(X)
-    grad = similar(X)
-    gradient!(grad, f, X)
-    return val, grad
+# Copy of NormL21 from ProximalOperators.jl:
+# https://github.com/JuliaFirstOrder/ProximalOperators.jl/blob/master/src/functions/normL21.jl
+#
+# But with minor changes to work with CUDA
+import ProximalOperators: prox!
+struct MyNormL21{R, I}
+    lambda::R
+    dim::I
+    function MyNormL21{R,I}(lambda::R, dim::I) where {R, I}
+            new(lambda, dim)
+    end
+end
+
+is_convex(f::Type{<:MyNormL21}) = true
+
+MyNormL21(lambda::R=1, dim::I=1) where {R, I} = MyNormL21{R, I}(lambda, dim)
+
+function (f::MyNormL21)(X)
+    return f.lambda * sum(sqrt, sum(abs2, X, dims=f.dim))
+end
+
+function prox!(Y, f::MyNormL21, X, gamma)
+    gl = gamma * f.lambda
+    shrink(norm) = max(1 - gl / norm, zero(real(eltype(X))))
+    slice_norms = sqrt.(sum(abs2, X, dims=f.dim))
+    scal = shrink.(slice_norms)
+
+    @. Y = scal * X 
+    return f.lambda * sum(scal .* slice_norms)
+end
+
+function prox_naive(f::MyNormL21, X, gamma)
+    gl = gamma * f.lambda
+    shrink(norm) = max(1 - gl / norm, zero(real(eltype(X))))
+    slice_norms = sqrt.(sum(abs2, X, dims=f.dim))
+    scal = shrink.(slice_norms)
+
+    Y = scal .* X 
+    return Y, f.lambda * f(Y)
 end
 
 """
@@ -14,7 +47,7 @@ DOAs are the grid positions for which the spectrum crosses a certain threshold, 
 
 arguments:
 ----------
-    Y: Data matrix of the array
+    Y: Data matrix of the array (Group LASSO with L21-penalty, when Y has >1 columns)
     A: Dictionary matrix of array response vectors from the angle grid 
     λ: Regularization parameter for the LASSO problem
     maxit: maximum iterations for optimization
@@ -24,13 +57,11 @@ References:
 -----------
 Z. Yang, J. Li, P. Stoica, and L. Xie, ‘Sparse methods for direction-of-arrival estimation’, arXiv [cs.IT], 30-Sep-2016.
 """
-function lasso(Y, A, λ=1e-2; maxit=100, tol=1e-6, kwargs...)
-    f = LeastSquares(A, Y)
-    g = NormL21(λ, 2)
-
-    X0_eltype = promote_type(eltype(A), eltype(Y))
-    X0 = fill!(similar(A, X0_eltype, size(A,2), size(Y,2)), zero(X0_eltype))
-    ffb = ProximalAlgorithms.FastForwardBackward(;maxit=maxit, tol=tol, kwargs...)
+function lasso(Y, A, λ=1e-2; kwargs...)
+    X0 = fill!(similar(Y, eltype(Y), size(A,2), size(Y,2)), zero(eltype(Y)))
+    f = X -> sum(abs2, A * X - Y) # least squares
+    g = MyNormL21(λ, 2)
+    ffb = ProximalAlgorithms.FastForwardBackward(; kwargs...)
     solution, _ = ffb(x0=X0, f=f, g=g)
     return vec(sum(abs2, solution, dims=2))
 end

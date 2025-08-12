@@ -42,7 +42,7 @@ H. L. Van Trees, Optimum array processing. Nashville, TN: John Wiley & Sons, 200
 """
 
 function (a::IsotropicArrayManifold)(angles::AzEl, f, c=c_0)
-    k = 2π * f / c
+    k = convert(eltype(angles.coords), 2π * f / c)
 
     az = transpose(angles.coords[1, :])
     el = transpose(angles.coords[2, :])
