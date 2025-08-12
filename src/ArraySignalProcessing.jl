@@ -2,6 +2,7 @@ module ArraySignalProcessing
 
 using LinearAlgebra
 using StatsBase
+using Random
 using ForwardDiff
 using Roots
 using Convex
