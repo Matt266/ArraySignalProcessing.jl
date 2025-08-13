@@ -15,9 +15,10 @@ using PRIMA
 using Peaks
 using ProximalAlgorithms
 using ProximalOperators
+using ProximalCore
 using Zygote
 using Enzyme
-#using Mooncake
+#using DifferentiationInterface: AutoEnzyme
 
 export PhasedArray, IsotropicArray, PhasedArray, NestedArray, steer, IsotropicArrayManifold, SampledArrayManifold,
         AzEl, WaveVec,

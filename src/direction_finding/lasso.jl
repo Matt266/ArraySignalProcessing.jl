@@ -39,6 +39,38 @@ function prox_naive(f::MyNormL21, X, gamma)
     return Y, f(Y)
 end
 
+struct MyLeastSquares{T, AT<:AbstractMatrix{T}, YT<:AbstractMatrix{T}, RT<:AbstractMatrix{T}, GT<:AbstractMatrix{T}}
+    A::AT
+    Y::YT
+    r_temp::RT
+    grad_temp::GT
+    
+    function MyLeastSquares(A::AT, Y::YT) where {T, AT<:AbstractMatrix{T}, YT<:AbstractMatrix{T}}
+        m, n = size(A)
+        k = size(Y, 2)
+        r_temp = similar(Y, T, m, k)
+        grad_temp = similar(A, T, n, k)
+        return new{T, AT, YT, typeof(r_temp), typeof(grad_temp)}(A, Y, r_temp, grad_temp)
+    end
+end
+
+
+# Fallback for compatibility
+function ProximalAlgorithms.value_and_gradient(f::MyLeastSquares, x)
+    # Compute residual: r = A*x - Y
+    mul!(f.r_temp, f.A, x)
+    f.r_temp .-= f.Y
+    
+    # Compute objective value: 0.5 * ||r||^2
+    val = 1//2 * sum(abs2, f.r_temp)
+    
+    # Compute gradient: A' * r and store in our buffer, then copy
+    mul!(f.grad_temp, f.A', f.r_temp)
+    
+    # Return the value and a COPY of the gradient to avoid buffer issues
+    return val, copy(f.grad_temp)
+end
+
 """
 lasso(Y, A, λ=1e-2; max_iter=300, tol=1e-6)
 
@@ -59,7 +91,9 @@ Z. Yang, J. Li, P. Stoica, and L. Xie, ‘Sparse methods for direction-of-arriva
 """
 function lasso(Y, A, λ=1e-2; kwargs...)
     X0 = fill!(similar(Y, eltype(Y), size(A,2), size(Y,2)), zero(eltype(Y)))
-    f = X -> 1//2 * sum(abs2, A * X - Y) # least squares
+    #f = X -> 1//2 * sum(abs2, A * X - Y) # least squares
+    f = MyLeastSquares(A, Y)
+
     g = MyNormL21(λ, 2)
     ffb = ProximalAlgorithms.FastForwardBackward(; kwargs...)
     solution, _ = ffb(x0=X0, f=f, g=g)
