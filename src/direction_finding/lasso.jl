@@ -42,8 +42,8 @@ end
 """
 lasso(Y, A, λ=1e-2; max_iter=300, tol=1e-6)
 
-LASSO DOA estimation. Returns a vector representing the estimated, on-grid, spatial power spectrum of the signals. Estimated 
-DOAs are the grid positions for which the spectrum crosses a certain threshold, as shown in the 'LASSO.ipynb' example.    
+(L21-norm Group) LASSO DOA estimation. Returns a vector representing the estimated, on-grid, spatial power spectrum of the signals. Estimated 
+DOAs are the grid positions for which the spectrum crosses a certain threshold, as shown in the 'LASSO.ipynb' example.
 
 arguments:
 ----------
@@ -67,6 +67,8 @@ function lasso(Y, A, λ=1e-2; kwargs...)
 end
 
 """
+λ for consistend/stable LASSO with ULA and Mulit Measurement Vector (MMV) 
+
 M: ULA length
 N: Number Snapshots
 SNR: SNR in dB 
@@ -79,6 +81,6 @@ Where source [85] is referenced for that:
     Y. Li, Y. Chi, Off-the-grid line spectrum denoising and estimation with multiple measurement vectors,
     IEEE Transactions on Signal Processing 64 (5) (2016) 1257–1269.
 """
-function λ_opt(M, N, SNR)
+function λ_stable(M, N, SNR)
     return sqrt(M*(N+log(M)+sqrt(2N*log(M)))*sqrt(snr2nvar(SNR)))
 end
