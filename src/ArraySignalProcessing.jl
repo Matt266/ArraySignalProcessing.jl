@@ -16,6 +16,8 @@ using Peaks
 using ProximalAlgorithms
 using ProximalOperators
 using Zygote
+using Enzyme
+#using Mooncake
 
 export PhasedArray, IsotropicArray, PhasedArray, NestedArray, steer, IsotropicArrayManifold, SampledArrayManifold,
         AzEl, WaveVec,
