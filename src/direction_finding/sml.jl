@@ -22,6 +22,9 @@ H. L. Van Trees, Optimum array processing. Nashville, TN: John Wiley & Sons, 200
 """
 function sml(pa::AbstractPhasedArray, Rxx, DoAs, f, c=c_0;
             optimizer = Optim.GradientDescent(), steer_kwargs=(), problem_kwargs=(), solve_kwargs=())
+    M = size(Rxx, 1)
+    d = size(DoAs, 2)
+    
     p = pa, Rxx, f, c
     sml_cost = function(angles, p)
         pa, Rxx, f, c = p
@@ -29,9 +32,6 @@ function sml(pa::AbstractPhasedArray, Rxx, DoAs, f, c=c_0;
         A = steer(pa, angles, f, c; steer_kwargs...)
         #PA = A*inv(A'*A)*A'
         PA = A*pinv(A) #TODO: check why the pinv() call here throws an error with CuArrys
-
-        M = size(Rxx, 1)
-        d = size(angles, 2)
 
         # asymptotic Maximum Likelihood (AML) estimator
         cost = log(det(PA*Rxx*PA+tr((I-PA)*Rxx)*(I-PA)/(M-d)))

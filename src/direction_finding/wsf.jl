@@ -25,38 +25,32 @@ M. Pesavento, M. Trinh-Hoang, and M. Viberg, ‘Three More Decades in Array Sign
 """
 function wsf(pa::AbstractPhasedArray, Rxx, DoAs, f, c=c_0;
             optimizer = Optim.GradientDescent(), steer_kwargs=(), problem_kwargs=(), solve_kwargs=())
-    p = pa, Rxx, f, c
+    d = size(DoAs, 2)
+    eigs = eigen(Rxx)
+    idx = sortperm(abs.(eigs.values); rev=true)
+    Λ = eigs.values[idx]
+    U = eigs.vectors[:, idx]
+    Λs = diagm(Λ[1:d])
+    Λn = diagm(Λ[d+1:length(Λ)])
+    Us = U[:, 1:d]
+    Un = U[:, d+1:size(U, 2)]
+
+    # estimate noise variance as mean of noise eigenvalues
+    # optimal weights as in Ottersten and Viberg ‘Analysis of subspace fitting based methods for sensor array processing’
+    σ² = mean(Λn)
+    Λest = Λs - σ²*I
+    W = Λest^2*inv(Λs)
+    
+    p = pa, Us, W, f, c
     wsf_cost = function(angles, p)
-        pa, Rxx, f, c = p
-        d = size(angles, 2)
-
-        eigs = eigen(Rxx)
-        idx = sortperm(abs.(eigs.values); rev=true)
-        Λ = eigs.values[idx]
-        U = eigs.vectors[:, idx]
-
-        Λs = diagm(Λ[1:d])
-        Λn = diagm(Λ[d+1:length(Λ)])
-
-        Us = U[:, 1:d]
-        Un = U[:, d+1:size(U, 2)]
-
-        # estimate noise variance as mean of noise eigenvalues
-        # optimal weights as in Ottersten and Viberg ‘Analysis of subspace fitting based methods for sensor array processing’
-        σ² = mean(Λn)
-        Λest = Λs - σ²*I
-        W = Λest^2*inv(Λs)
-
-        #A = hcat(steerphi.(Ref(pa), f, ϕ; fs=fs, c=c, direction=Incoming)...)
+        pa, Us, W, f, c = p
         A = steer(pa, angles, f, c; steer_kwargs...)
-        #PA = A*inv(A'*A)*A'
         PA = A*pinv(A) #TODO: check why the pinv() call here throws an error with CuArrys
-
         cost =  tr((I-PA)*Us*W*Us')
         return real(cost)
     end
 
-    f = OptimizationFunction(wsf_cost, Optimization.AutoZygote())
+    f = OptimizationFunction(wsf_cost, AutoZygote())
     p = OptimizationProblem(f, DoAs, p; problem_kwargs...)
     s = solve(p, optimizer; solve_kwargs...)
     return s.u
