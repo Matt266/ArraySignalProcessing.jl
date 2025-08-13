@@ -36,7 +36,7 @@ function prox_naive(f::MyNormL21, X, gamma)
     scal = shrink.(slice_norms)
 
     Y = scal .* X 
-    return Y, f.lambda * f(Y)
+    return Y, f(Y)
 end
 
 """
@@ -59,7 +59,7 @@ Z. Yang, J. Li, P. Stoica, and L. Xie, ‘Sparse methods for direction-of-arriva
 """
 function lasso(Y, A, λ=1e-2; kwargs...)
     X0 = fill!(similar(Y, eltype(Y), size(A,2), size(Y,2)), zero(eltype(Y)))
-    f = X -> sum(abs2, A * X - Y) # least squares
+    f = X -> 1//2 * sum(abs2, A * X - Y) # least squares
     g = MyNormL21(λ, 2)
     ffb = ProximalAlgorithms.FastForwardBackward(; kwargs...)
     solution, _ = ffb(x0=X0, f=f, g=g)
