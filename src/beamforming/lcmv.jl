@@ -17,3 +17,27 @@ function lcmv_weights(Rnn, C, G)
 end
 
 lcmp_weights(Rxx, C, G) = lcmv_weights(Rxx, C, G)
+
+"""
+Calculate quiescent beamformer weights WQ, Blocking Matrix B and an initial set of adaptive weights (WA)
+for usage with a Generalized Sidelobe Canceller (GSC)
+
+References:
+-----------
+H. L. Van Trees, Optimum array processing. Nashville, TN: John Wiley & Sons, 2002.
+"""
+function lcmv_gsc(Rxx, C, G)
+    N, M = size(C)
+    WQ = pinv(C')*G
+
+    PC = C*pinv(C)
+    U, _, _ = svd(I-PC)
+    B = U[:, 1:(N - M)]
+
+    WA = (B'*Rxx*B) \ (B'*Rxx*WQ)
+
+    # Total weights:
+    # W = WQ - B * WA
+
+    return WQ, B, WA
+end

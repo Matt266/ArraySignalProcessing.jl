@@ -23,7 +23,7 @@ using Enzyme
 export PhasedArray, IsotropicArray, PhasedArray, NestedArray, steer, IsotropicArrayManifold, SampledArrayManifold,
         AzEl, WaveVec,
         dsb_weights, bartlett, mvdr_weights, mpdr_weights, capon_weights, capon, lcmv_weights, lcmp_weights,
-        whitenoise, diffnoise, esprit, music, unitary_esprit, lasso, λ_stable, omp, ols, bpdn,
+        lcmv_gsc, whitenoise, diffnoise, esprit, music, unitary_esprit, lasso, λ_stable, omp, ols, bpdn,
         aic, mdl, wsf, dml, sml, unconditional_signals, find_doas
 
 c_0 = 299792458.0
