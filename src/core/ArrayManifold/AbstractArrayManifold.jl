@@ -28,7 +28,9 @@ function (a::AbstractArrayManifold)(angles, f, c=c_0; coords=:AzEl)
         return a(WaveVec(angles), f, c)
     elseif  coords == :SlowVec
         return a(SlowVec(angles), f, c)
+    elseif  coords == :RAzEl
+        return a(RAzEl(angles), f, c)
     else
-        throw(DomainError("'coords' must be ':AzEl', ':WaveVec', or ':SlowVec'; got: '$(coords)'"))
+        throw(DomainError("'coords' must be ':AzEl', ':WaveVec', ':SlowVec', or ''RAzEl'; got: '$(coords)'"))
     end
 end

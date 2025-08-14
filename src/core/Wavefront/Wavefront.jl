@@ -5,3 +5,4 @@ abstract type SphericalWave <: Wavefront end
 include("AzEl.jl")
 include("WaveVec.jl")
 include("SlowVec.jl")
+include("RAzEl.jl")

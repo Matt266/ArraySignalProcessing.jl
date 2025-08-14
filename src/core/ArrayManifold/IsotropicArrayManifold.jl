@@ -79,3 +79,35 @@ function (a::IsotropicArrayManifold)(angles::SlowVec, f, c=c_0)
     φ = a.r' * (ω * angles.coords)
     return exp.(-1im .* φ)
 end
+
+"""
+References:
+-----------
+Z. Ebadi, A. M. Molaei, M. A. B. Abbasi, S. Cotton, A. Tukmanov and O. Yurduseven, "Near-Field Localization with an Exact Propagation Model in Presence of Mutual Coupling," 2024 IEEE 99th Vehicular Technology Conference (VTC2024-Spring), Singapore, Singapore, 2024, pp. 1-5, doi: 10.1109/VTC2024-Spring62846.2024.10683010.
+"""
+
+function (a::IsotropicArrayManifold)(angles::RAzEl, f, c=c_0)
+    k = convert(eltype(angles.coords), 2π * f / c)
+
+    r  = transpose(angles.coords[1, :])
+    az = transpose(angles.coords[2, :])
+    el = transpose(angles.coords[3, :])
+
+    ζ = r .* [cos.(el) .* cos.(az);
+              cos.(el) .* sin.(az);
+              sin.(el)]
+
+    #(3xD → 3x1xD)
+    src_pos = reshape(ζ, 3, 1, size(ζ,2))
+
+    #(3xM → 3xMx1)
+    sens_pos = reshape(a.r, 3, size(a.r,2), 1)
+
+    # distances from each sensor to each source (M×D)
+    R = dropdims(sqrt.(sum(abs2, sens_pos .- src_pos; dims=1)), dims=1)
+
+    amp = (r ./ R)
+    φ = -(k .* (R .- r))
+
+    return amp .* exp.(-1im .* φ)
+end
