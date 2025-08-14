@@ -21,12 +21,14 @@ References:
 -----------
 H. L. Van Trees, Optimum array processing. Nashville, TN: John Wiley & Sons, 2002.
 """
-function (a::AbstractArrayManifold)(angles, f, c=c_0; coords=:azel)
-    if coords == :azel
+function (a::AbstractArrayManifold)(angles, f, c=c_0; coords=:AzEl)
+    if coords == :AzEl
         return a(AzEl(angles), f, c)
-    elseif coords == :k
+    elseif coords == :WaveVec
         return a(WaveVec(angles), f, c)
+    elseif  coords == :SlowVec
+        return a(SlowVec(angles), f, c)
     else
-        throw(DomainError("'coords' must be ':azel' or ':k'; got: '$(coords)'"))
+        throw(DomainError("'coords' must be ':AzEl', ':WaveVec', or ':SlowVec'; got: '$(coords)'"))
     end
 end

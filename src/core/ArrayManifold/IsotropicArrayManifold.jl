@@ -68,3 +68,14 @@ function (a::IsotropicArrayManifold)(angles::WaveVec, f, c=c_0)
     φ = a.r' * angles.coords
     return exp.(-1im .* φ)
 end
+
+"""
+References:
+-----------
+D. H. Johnson and D. E. Dudgeon, Array Signal Processing. Philadelphia, PA: Prentice Hall, 1993.
+"""
+function (a::IsotropicArrayManifold)(angles::SlowVec, f, c=c_0)
+    ω = convert(eltype(angles.coords), 2π * f)
+    φ = a.r' * (ω * angles.coords)
+    return exp.(-1im .* φ)
+end
