@@ -13,15 +13,12 @@ single frequency are recorded, responses reduces to:
 You must sample over at least one dimension. If other dependencies (e.g., temperature) are 
 be needed, either create an array of SampledArrayManifolds or implement a custom ArrayManifold subtype.
 """
-struct SampledArrayManifold <: AbstractArrayManifold
-    c_grid::AbstractVector
-    f_grid::AbstractVector
-    coords_grid::Wavefront
-    num_elements::Int
-    responses::AbstractArray
-    keep_axes::AbstractVector
-    itp_mag::AbstractInterpolation
-    itp_phase::AbstractInterpolation
+struct SampledArrayManifold{NT<:Int, MT<:AbstractInterpolation, PT<:AbstractInterpolation} <: AbstractArrayManifold
+    num_elements::NT
+    coords_type::DataType
+    keep_axes::BitVector
+    itp_mag::MT
+    itp_phase::PT
     function SampledArrayManifold(responses::AbstractArray; c_grid=[0], f_grid=[0], coords_grid=AzEl(0))
         num_elements = size(responses)[end]
 
@@ -53,7 +50,7 @@ struct SampledArrayManifold <: AbstractArrayManifold
         
         itp_mag = extrapolate(interpolate(grid_axes, abs.(flattened_responses), Gridded(Interpolations.Linear())),Interpolations.Flat())
         itp_phase = extrapolate(interpolate(grid_axes, angle.(flattened_responses), Gridded(Interpolations.Linear())),Interpolations.Flat())
-        return new(c_grid, f_grid, coords_grid, num_elements, flattened_responses, keep_axes, itp_mag, itp_phase)
+        return new{typeof(num_elements), typeof(itp_mag), typeof(itp_phase)}(num_elements, typeof(coords_grid), keep_axes, itp_mag, itp_phase)
     end
 end
 
@@ -62,7 +59,7 @@ end
 # which for now is the intended behaviour 
 # TODO: probably in each Wavefront constructer: constrain values (e.g., azimuth to -π...+π and elevation to 0...π).
 function (a::SampledArrayManifold)(angles::Wavefront, f, c=c_0)
-    angles = convert(typeof(a.coords_grid), angles)
+    angles = convert(a.coords_type, angles)
 
     # matrix of tuples: each row an element index e, each col an column from the angles 
     # all axes with size <= 1 will be dropped from the points
