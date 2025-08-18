@@ -12,7 +12,7 @@ end
 "Finds peaks in the 1D power spectrum (spectrum = pfunc(angles)) via initial grid search
  and a following optimization based refinment"
 function find_doas(grid::AbstractVector, pfunc::Function, d;
-                    optimizer = Optim.LBFGS(), problem_kwargs=(), solve_kwargs=())
+                    optimizer = Fminbox(LBFGS()), problem_kwargs=(), solve_kwargs=())
     # spectrum over grid
     spectrum = pfunc(transpose(grid))
 
