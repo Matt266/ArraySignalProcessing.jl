@@ -21,7 +21,7 @@ H. Krim and M. Viberg, ‘Two decades of array signal processing research: the p
 H. L. Van Trees, Optimum array processing. Nashville, TN: John Wiley & Sons, 2002.
 """
 function sml(pa::AbstractPhasedArray, Rxx, DoAs, f, c=c_0;
-            optimizer = Optim.GradientDescent(), steer_kwargs=(), problem_kwargs=(), solve_kwargs=())
+            optimizer = Optim.LBFGS(), steer_kwargs=(), problem_kwargs=(), solve_kwargs=())
     M = size(Rxx, 1)
     d = size(DoAs, 2)
     

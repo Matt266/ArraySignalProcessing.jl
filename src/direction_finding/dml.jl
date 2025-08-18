@@ -18,7 +18,7 @@ References:
 H. Krim and M. Viberg, ‘Two decades of array signal processing research: the parametric approach’, IEEE Signal Process. Mag., vol. 13, no. 4, pp. 67–94, Jul. 1996.
 """
 function dml(pa::AbstractPhasedArray, Rxx, DoAs, f, c=c_0; 
-            optimizer = Optim.GradientDescent(), steer_kwargs=(), problem_kwargs=(), solve_kwargs=())
+            optimizer = Optim.LBFGS(), steer_kwargs=(), problem_kwargs=(), solve_kwargs=())
     p = pa, Rxx, f, c
     dml_cost = function(angles, p)
         pa, Rxx, f, c = p

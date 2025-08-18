@@ -24,7 +24,7 @@ H. Krim and M. Viberg, ‘Two decades of array signal processing research: the p
 M. Pesavento, M. Trinh-Hoang, and M. Viberg, ‘Three More Decades in Array Signal Processing Research: An optimization and structure exploitation perspective’, IEEE Signal Process. Mag., vol. 40, no. 4, pp. 92–106, Jun. 2023.
 """
 function wsf(pa::AbstractPhasedArray, Rxx, DoAs, f, c=c_0;
-            optimizer = Optim.GradientDescent(), steer_kwargs=(), problem_kwargs=(), solve_kwargs=())
+            optimizer = Optim.LBFGS(), steer_kwargs=(), problem_kwargs=(), solve_kwargs=())
     d = size(DoAs, 2)
     eigs = eigen(Rxx)
     idx = sortperm(abs.(eigs.values); rev=true)
