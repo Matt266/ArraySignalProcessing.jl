@@ -41,7 +41,7 @@ References:
 H. L. Van Trees, Optimum array processing. Nashville, TN: John Wiley & Sons, 2002.
 """
 
-function (a::IsotropicArrayManifold)(angles::AzEl, f, c=c_0)
+function (a::IsotropicArrayManifold)(angles::AzEl, f::Number, c::Number=c_0)
     k = convert(eltype(angles.coords), 2π * f / c)
 
     az = transpose(angles.coords[1, :])
@@ -61,7 +61,7 @@ References:
 -----------
 H. L. Van Trees, Optimum array processing. Nashville, TN: John Wiley & Sons, 2002.
 """
-function (a::IsotropicArrayManifold)(angles::WaveVec, f, c=c_0)
+function (a::IsotropicArrayManifold)(angles::WaveVec, f::Number, c::Number=c_0)
     #k = 2π * f / c  
     #ζ = angles.coords ./ k
     #φ = k .* (a.r' * ζ)
@@ -74,7 +74,7 @@ References:
 -----------
 D. H. Johnson and D. E. Dudgeon, Array Signal Processing. Philadelphia, PA: Prentice Hall, 1993.
 """
-function (a::IsotropicArrayManifold)(angles::SlowVec, f, c=c_0)
+function (a::IsotropicArrayManifold)(angles::SlowVec, f::Number, c::Number=c_0)
     ω = convert(eltype(angles.coords), 2π * f)
     φ = a.r' * (ω * angles.coords)
     return exp.(-1im .* φ)
@@ -86,7 +86,7 @@ References:
 Z. Ebadi, A. M. Molaei, M. A. B. Abbasi, S. Cotton, A. Tukmanov and O. Yurduseven, "Near-Field Localization with an Exact Propagation Model in Presence of Mutual Coupling," 2024 IEEE 99th Vehicular Technology Conference (VTC2024-Spring), Singapore, Singapore, 2024, pp. 1-5, doi: 10.1109/VTC2024-Spring62846.2024.10683010.
 """
 
-function (a::IsotropicArrayManifold)(angles::RAzEl, f, c=c_0)
+function (a::IsotropicArrayManifold)(angles::RAzEl, f::Number, c::Number=c_0)
     k = convert(eltype(angles.coords), 2π * f / c)
 
     r  = transpose(angles.coords[1, :])

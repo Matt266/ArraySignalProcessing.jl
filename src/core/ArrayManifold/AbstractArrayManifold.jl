@@ -34,3 +34,23 @@ function (a::AbstractArrayManifold)(angles, f, c=c_0; coords=:AzEl)
         throw(DomainError("'coords' must be ':AzEl', ':WaveVec', ':SlowVec', or ''RAzEl'; got: '$(coords)'"))
     end
 end
+
+# fallback so default value c=c_0 is used when possible
+function (a::AbstractArrayManifold)(angles::Wavefront, f, c=c_0)
+    return a(angles, f, c)
+end
+
+# returns M x (A*F*C) matrix which can be reshaped to M x A x F x C if required
+function (a::AbstractArrayManifold)(angles::Wavefront, f::AbstractVector, c::AbstractVector)
+    return mapreduce(((fi, ci),) -> a(angles, fi, ci), hcat, Iterators.product(f, c))
+end
+
+# returns M x (A*F) matrix which can be reshaped to M x A x F if required
+function (a::AbstractArrayManifold)(angles::Wavefront, f::AbstractVector, c::Number)
+    return mapreduce(fi -> a(angles, fi, c), hcat, f)
+end
+
+# returns M x (A*C) matrix which can be reshaped to M x A x C if required
+function (a::AbstractArrayManifold)(angles::Wavefront, f::Number, c::AbstractVector)
+    return mapreduce(ci -> a(angles, f, ci), hcat, c)
+end
