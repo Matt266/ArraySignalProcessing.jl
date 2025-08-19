@@ -41,3 +41,24 @@ function lcmv_gsc(Rxx, C, G)
 
     return WQ, B, WA
 end
+
+"""
+Basic utility power spectrum for LCMV. 
+
+E.g., "Sweep" C as wideband distortionless constraint over multiple angles for 
+wideband DoA estimation. 
+
+As this does not directly perform the sweep over multiple angles and one may want to 
+set additional constraints (e.g., derivative), this is not directly a detection method but 
+a utility that can be used to perform a LMCV-based detection.
+
+References:
+-----------
+
+W. Liu and S. Weiss, Wideband Beamforming. Nashville, TN: John Wiley & Sons, 2010.
+"""
+function lcmv(Rxx, C, G)
+    # g'*inv(C'*inv(Rxx)*C)*g for multiple g as Matrix G
+    P = vec(sum(conj(G) .* (inv(C'*inv(Rxx)*C) * G), dims=1))
+    return real(P)
+end
