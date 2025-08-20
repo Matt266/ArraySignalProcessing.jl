@@ -42,15 +42,21 @@ end
 
 # returns M x (A*F*C) matrix which can be reshaped to M x A x F x C if required
 function (a::AbstractArrayManifold)(angles::Wavefront, f::AbstractVector, c::AbstractVector)
-    return mapreduce(((fi, ci),) -> a(angles, fi, ci), hcat, Iterators.product(f, c))
+    #return mapreduce(((fi, ci),) -> a(angles, fi, ci), hcat, Iterators.product(f, c))
+    a_list = map(((fi, ci),) -> a(angles, fi, ci), Iterators.product(f, c))
+    return hcat(a_list...)
 end
 
 # returns M x (A*F) matrix which can be reshaped to M x A x F if required
 function (a::AbstractArrayManifold)(angles::Wavefront, f::AbstractVector, c::Number)
-    return mapreduce(fi -> a(angles, fi, c), hcat, f)
+    #return mapreduce(fi -> a(angles, fi, c), hcat, f)
+    a_list = map(fi -> a(angles, fi, c), f)
+    return hcat(a_list...)
 end
 
 # returns M x (A*C) matrix which can be reshaped to M x A x C if required
 function (a::AbstractArrayManifold)(angles::Wavefront, f::Number, c::AbstractVector)
-    return mapreduce(ci -> a(angles, f, ci), hcat, c)
+    #return mapreduce(ci -> a(angles, f, ci), hcat, c)
+    a_list = map(ci -> a(angles, f, ci), c)
+    return hcat(a_list...)
 end

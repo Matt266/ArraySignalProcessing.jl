@@ -76,12 +76,14 @@ function steer(pa::TappedDelayLine, angles, f, c=c_0; kwargs...)
 
     # number of taps and sample period
     J = pa.num_taps
-    Ts = 1 / pa.fs
+    Ts = convert(eltype(f), 1 / pa.fs)
 
     # taps 'steering vectors': (J x F)
     ωs = 2π .* f
-    v_taps = [exp.(-1im .* ω .* (0:J-1) .* Ts) for ω in ωs]  # vector of J-vectors
-    v_taps = hcat(v_taps...)  # J x F
+
+    # J x F
+    v_taps = similar(v_array, complex(eltype(f)), J, length(f))
+    copyto!(v_taps, hcat([exp.(-1im .* ω .* (0:J-1) .* Ts) for ω in ωs]...))  # vector of J-vectors
 
     # reshape to broadcast
     v_array_reshaped = reshape(v_array, M, 1, A, F, C)   # M x 1 x A x F x C
