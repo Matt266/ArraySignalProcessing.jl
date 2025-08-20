@@ -83,7 +83,7 @@ function steer(pa::TappedDelayLine, angles, f, c=c_0; kwargs...)
 
     # J x F
     v_taps = similar(v_array, complex(eltype(f)), J, length(f))
-    copyto!(v_taps, hcat([exp.(-1im .* ω .* (0:J-1) .* Ts) for ω in ωs]...))  # vector of J-vectors
+    copyto!(v_taps, hcat([exp.(-1im .* ω .* (0:J-1) .* Ts) for ω in ωs]...))
 
     # reshape to broadcast
     v_array_reshaped = reshape(v_array, M, 1, A, F, C)   # M x 1 x A x F x C
