@@ -41,6 +41,26 @@ function diffnoise(pa::TappedDelayLine, σ², f, c=c_0)
     # temporal correlation between taps  
     R_time = [exp(-1im * ω * (i-j) * Ts) for i=0:J-1, j=0:J-1]
 
-    # extend to TDL: Kronecker product with I_J
+    # extend to TDL: Kronecker product
     return kron(R_time, R_spatial)
+end
+
+# TODO: this is a quick fix to have whitenoise work with TappedDelayLines
+#       References are needed to check how whitenoise is modelled
+#       for taps correctly!
+function whitenoise(pa::TappedDelayLine, σ², f)
+    J  = pa.num_taps
+    Ts = 1 / pa.fs
+    ω  = 2π * f
+
+    M = length(pa.manifold)
+
+    # temporal correlation between taps  
+    R_time = [exp(-1im * ω * (i-j) * Ts) for i = 0:J-1, j = 0:J-1]
+
+    # spatially white between sensors
+    R_spatial_white = I(M) 
+
+    # extend to TDL: Kronecker product
+    return σ² * kron(R_time, R_spatial_white)
 end
