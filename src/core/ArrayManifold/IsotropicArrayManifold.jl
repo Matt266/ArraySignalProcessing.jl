@@ -42,7 +42,7 @@ H. L. Van Trees, Optimum array processing. Nashville, TN: John Wiley & Sons, 200
 """
 
 function (a::IsotropicArrayManifold)(angles::AzEl, f::Number, c::Number=c_0)
-    k = convert(eltype(angles.coords), 2π * f / c)
+    k = convert(promote_type(eltype(angles.coords), Float32), 2π * f / c)
 
     az = transpose(angles.coords[1, :])
     el = transpose(angles.coords[2, :])
@@ -75,7 +75,7 @@ References:
 D. H. Johnson and D. E. Dudgeon, Array Signal Processing. Philadelphia, PA: Prentice Hall, 1993.
 """
 function (a::IsotropicArrayManifold)(angles::SlowVec, f::Number, c::Number=c_0)
-    ω = convert(eltype(angles.coords), 2π * f)
+    ω = convert(promote_type(eltype(angles.coords), Float32), 2π * f)
     φ = a.r' * (ω * angles.coords)
     return exp.(-1im .* φ)
 end
@@ -87,7 +87,7 @@ Z. Ebadi, A. M. Molaei, M. A. B. Abbasi, S. Cotton, A. Tukmanov and O. Yurduseve
 """
 
 function (a::IsotropicArrayManifold)(angles::RAzEl, f::Number, c::Number=c_0)
-    k = convert(eltype(angles.coords), 2π * f / c)
+    k = convert(promote_type(eltype(angles.coords), Float32), 2π * f / c)
 
     r  = transpose(angles.coords[1, :])
     az = transpose(angles.coords[2, :])
