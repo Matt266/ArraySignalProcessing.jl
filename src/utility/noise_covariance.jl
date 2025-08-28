@@ -30,13 +30,13 @@ end
 # TODO: this is a quick fix to have diffnoise work with TappedDelayLines
 #       References are needed to check how diffnoise is modelled
 #       for taps correctly!
-function diffnoise(pa::TappedDelayLine, σ², f, c=c_0)
-    J = pa.num_taps
-    Ts = 1 / pa.fs
+function diffnoise(pa::PhasedArray{<:TappedDelayLineManifold}, σ², f, c=c_0)
+    J = pa.manifold.num_taps
+    Ts = 1 / pa.manifold.fs
     ω = 2π*f
 
     # diffuse spatial noise correlation
-    R_spatial = diffnoise(PhasedArray(pa.manifold), σ², f, c)
+    R_spatial = diffnoise(PhasedArray(pa.manifold.sub_manifold), σ², f, c)
 
     # temporal correlation between taps  
     R_time = [exp(-1im * ω * (i-j) * Ts) for i=0:J-1, j=0:J-1]
@@ -48,12 +48,12 @@ end
 # TODO: this is a quick fix to have whitenoise work with TappedDelayLines
 #       References are needed to check how whitenoise is modelled
 #       for taps correctly!
-function whitenoise(pa::TappedDelayLine, σ², f)
-    J  = pa.num_taps
-    Ts = 1 / pa.fs
+function whitenoise(pa::PhasedArray{<:TappedDelayLineManifold}, σ², f)
+    J  = pa.manifold.num_taps
+    Ts = 1 / pa.manifold.fs
     ω  = 2π * f
 
-    M = length(pa.manifold)
+    M = length(pa.manifold.sub_manifold)
 
     # temporal correlation between taps  
     R_time = [exp(-1im * ω * (i-j) * Ts) for i = 0:J-1, j = 0:J-1]

@@ -21,7 +21,7 @@ using Enzyme
 #using DifferentiationInterface: AutoEnzyme
 
 export PhasedArray, IsotropicArray, PhasedArray, NestedArray, steer, IsotropicArrayManifold, SampledArrayManifold,
-        TappedDelayLine, AzEl, WaveVec, SlowVec, RAzEl,
+        TappedDelayLine, TappedDelayLineManifold, AzEl, WaveVec, SlowVec, RAzEl,
         dsb_weights, bartlett, mvdr_weights, mpdr_weights, capon_weights, capon, lcmv_weights, lcmp_weights,
         lcmv_gsc, lcmv, GeneralizedSidelobeCanceler, process, process!, LMS, RLS,
         whitenoise, diffnoise, esprit, music, unitary_esprit, lasso, λ_stable, omp, ols, bpdn,
