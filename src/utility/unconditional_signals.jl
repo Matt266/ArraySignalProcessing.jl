@@ -42,9 +42,12 @@ function unconditional_signals(pa::AbstractPhasedArray, Rss, N, SNR, angles, f, 
     s = unconditional_signals(Rss, N; norm=norm, wtype=typeof(A))
     s = convert(typeof(A), s)
 
-    # if sum of signals is not normed to unit power 
     # amplify noise by signal power to reach desired SNR  
-    nvar = snr2nvar(SNR) * (norm ? 1 : tr(Rss))
+    # variance per sensor = noise variance for unit power signal times average signal power of the sensors
+    # TODO: check if scaling SNR on a per sensor basis would be more meaningfull.
+    #   e.g. (2.170) Optimum Array Processing - van Trees 2002 defines a per sensor input SNR,
+    #   which seems to be the standard input SNR
+    nvar = snr2nvar(SNR) * tr(A*Rss*A')/M
     n = sqrt(nvar/2)*(randn!(similar(A, M, N)) + 1im*randn!(similar(A, M, N)))
     n = convert(typeof(A), n)
     return A*s+n
