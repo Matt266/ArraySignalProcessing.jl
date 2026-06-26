@@ -21,7 +21,7 @@ using Enzyme
 #using DifferentiationInterface: AutoEnzyme
 using Adapt
 
-export PhasedArray, IsotropicArray, PhasedArray, NestedArray, steer, IsotropicArrayManifold, SampledArrayManifold,
+export  IsotropicArray, IsotropicArrayManifold, NestedArray, NestedArrayManifold, SampledArray, SampledArrayManifold,
         TappedDelayLine, TappedDelayLineManifold, AzEl, WaveVec, SlowVec, RAzEl,
         dsb_weights, bartlett, mvdr_weights, mpdr_weights, capon_weights, capon, lcmv_weights, lcmp_weights,
         lcmv_gsc, lcmv, GeneralizedSidelobeCanceler, process, process!, LMS, RLS,
