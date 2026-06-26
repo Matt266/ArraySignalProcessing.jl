@@ -19,6 +19,7 @@ using ProximalCore
 using Zygote
 using Enzyme
 #using DifferentiationInterface: AutoEnzyme
+using Adapt
 
 export PhasedArray, IsotropicArray, PhasedArray, NestedArray, steer, IsotropicArrayManifold, SampledArrayManifold,
         TappedDelayLine, TappedDelayLineManifold, AzEl, WaveVec, SlowVec, RAzEl,
