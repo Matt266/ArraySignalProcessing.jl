@@ -71,15 +71,16 @@ function (a::SampledArrayManifold)(angles::Wavefront, f::Number, c::Number=c_0)
 
     # matrix of tuples: each row an element index e, each col an column from the angles 
     # all axes with size <= 1 will be dropped from the points
-    A_matrix = [ 
-        begin
-            query_point = Tuple([c_val, f_val, col..., e][a.keep_axes])
-            a.itp_mag(query_point...) * exp(1im * a.itp_phase(query_point...))
-        end
-        for e in 1:a.num_elements, (col, f_val, c_val) in combinations 
-    ]
-    
-    return A_matrix
+    return hcat([
+        [
+            begin
+                query_point = Tuple([c_val, f_val, col..., e][a.keep_axes])
+                a.itp_mag(query_point...) * exp(1im * a.itp_phase(query_point...))
+            end
+            for e in 1:a.num_elements
+        ]
+        for (col, f_val, c_val) in combos
+    ]...)
 end
 
 function Base.length(a::SampledArrayManifold)
