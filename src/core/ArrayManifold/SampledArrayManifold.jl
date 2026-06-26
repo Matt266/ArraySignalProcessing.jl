@@ -79,7 +79,7 @@ function (a::SampledArrayManifold)(angles::Wavefront, f::Number, c::Number=c_0)
             end
             for e in 1:a.num_elements
         ]
-        for (col, f_val, c_val) in combos
+        for (col, f_val, c_val) in combinations
     ]...)
 end
 
