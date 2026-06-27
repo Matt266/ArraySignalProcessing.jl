@@ -70,7 +70,14 @@ function (a::IsotropicArrayManifold)(angles::WaveVec, f, c=c_0)
     #ζ = angles.coords ./ k
     #φ = k .* (a.r' * ζ)
     φ = a.r' * angles.coords
-    return exp.(-1im .* φ)
+    A_base = exp.(-1im .* φ)
+    
+    # pad dimensions to stay consistent with wavefront types on return
+    T = promote_type(eltype(angles.coords), Float32)
+    f_zeros = f isa Number ? 0 : fill!(similar(angles.coords, T, 1, 1, length(f), 1), 0)
+    c_zeros = c isa Number ? 0 : fill!(similar(angles.coords, T, 1, 1, 1, length(c)), 0)
+    A_tensor = A_base .+ f_zeros .+ c_zeros
+    return reshape(A_tensor, size(A_tensor, 1), :)
 end
 
 """
@@ -79,11 +86,16 @@ References:
 D. H. Johnson and D. E. Dudgeon, Array Signal Processing. Philadelphia, PA: Prentice Hall, 1993.
 """
 function (a::IsotropicArrayManifold)(angles::SlowVec, f, c=c_0)
-    res = f isa Number ? f : reshape(f, 1, 1, :, 1)
+    f_res = f isa Number ? f : reshape(f, 1, 1, :, 1)
+
     ω = convert.(promote_type(eltype(angles.coords), Float32), 2π .* f_res)
     φ = a.r' * (ω * angles.coords)
-    A_tensor = exp.(-1im .* φ)
+    A_base = exp.(-1im .* φ)
 
+    # pad dimensions to stay consistent with wavefront types on return
+    T = promote_type(eltype(angles.coords), Float32)
+    c_zeros = c isa Number ? 0 : fill!(similar(angles.coords, T, 1, 1, 1, length(c)), 0)
+    A_tensor = A_base .+ c_zeros
     return reshape(A_tensor, size(A_tensor, 1), :)
 end
 
