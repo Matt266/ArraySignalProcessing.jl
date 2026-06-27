@@ -12,11 +12,10 @@ function AzEl(coords::AbstractMatrix)
     M >= 3 && throw(DimensionMismatch("'coords' has size $(size(coords)) but must have at most two rows: [azimuths...; elevations...]"))
     D <= 0 && throw(DimensionMismatch("'coords' has size $(size(coords)) but must have at least one column"))
 
-    padded_coords = similar(coords, eltype(coords), 2, D)
-    padded_coords[1:M, :] = coords
-    
     if M == 1
-        padded_coords[2:2, :] .= 0
+        padded_coords = vcat(coords, Zeros{eltype(coords)}(1, D))
+    else
+        padded_coords = coords
     end
 
     return AzEl{eltype(padded_coords), typeof(padded_coords)}(padded_coords)

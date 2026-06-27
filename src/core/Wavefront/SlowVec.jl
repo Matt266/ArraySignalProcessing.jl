@@ -11,11 +11,12 @@ function SlowVec(coords::AbstractMatrix)
     M >= 4 && throw(DimensionMismatch("'coords' has size $(size(coords)) but must have at most three rows: [sx...; sy...; sz...]"))
     D <= 0 && throw(DimensionMismatch("'coords' has size $(size(coords)) but must have at least one column"))
 
-    padded_coords = similar(coords, eltype(coords), 3, D)
-    padded_coords[1:M, :] = coords
-
-    if M < 3
-        padded_coords[M+1:3, :] .= 0
+    if M == 1
+        padded_coords = vcat(coords, Zeros{eltype(coords)}(2, D))
+    elseif M == 2
+        padded_coords = vcat(coords, Zeros{eltype(coords)}(1, D))
+    else
+        padded_coords = coords
     end
 
     return SlowVec{eltype(padded_coords), typeof(padded_coords)}(padded_coords)

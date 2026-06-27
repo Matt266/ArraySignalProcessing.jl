@@ -20,6 +20,7 @@ using Zygote
 using Enzyme
 #using DifferentiationInterface: AutoEnzyme
 using Adapt
+using FillArrays
 
 export  IsotropicArray, IsotropicArrayManifold, NestedArray, NestedArrayManifold, SampledArray, SampledArrayManifold,
         TappedDelayLine, TappedDelayLineManifold, AzEl, WaveVec, SlowVec, RAzEl,

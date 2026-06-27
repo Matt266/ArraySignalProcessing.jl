@@ -40,10 +40,8 @@ function (a::TappedDelayLineManifold)(angles::Wavefront, f, c=c_0)
     Ts = convert(promote_type(eltype(f), Float32), 1 / a.fs)
     
     # J x F
-    v_taps = similar(v_array, complex(promote_type(eltype(f), Float32)), J, F)
-    f_vec = f isa Number ? [f] : f
-    phases = exp.(-1im .* 2π .* reshape(f_vec, 1, F) .* reshape(0:J-1, J, 1) .* Ts)
-    copyto!(v_taps, phases)
+    f_vec = f isa Number ? f : reshape(f, 1, F)
+    v_taps = exp.(-1im .* 2π .* f_vec .* reshape(0:J-1, J, 1) .* Ts)
 
     # reshape to broadcast
     v_array_reshaped = reshape(v_array, M, 1, A, F, C)   # M x 1 x A x F x C

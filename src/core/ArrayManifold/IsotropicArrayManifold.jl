@@ -12,11 +12,12 @@ function IsotropicArrayManifold(r::AbstractMatrix)
     M >= 4 && throw(DimensionMismatch("'r' has size $(size(r)) but must have at most three rows: [x...; y...; z...]"))
     D <= 0 && throw(DimensionMismatch("'r' has size $(size(r)) but must have at least one column"))
 
-    padded_r = similar(r, 3, D)
-    padded_r[1:M, :] = r
-
-    if M < 3
-        padded_r[M+1:3, :] .= 0
+    if M == 1
+        padded_r = vcat(r, Zeros{eltype(r)}(2, D))
+    elseif M == 2
+        padded_r = vcat(r, Zeros{eltype(r)}(1, D))
+    else
+        padded_r = r
     end
 
     return IsotropicArrayManifold{eltype(padded_r), typeof(padded_r)}(padded_r)
