@@ -1,34 +1,29 @@
-struct RAzEl{T<:AbstractMatrix} <: SphericalWave
-    coords::T
-    function RAzEl(coords::AbstractMatrix)
-        # coords = [r...; azimuth...; elevation...] 3xD matrix
-
-        M, D = size(coords)
-        M <= 0 && throw(DimensionMismatch("'coords' has size $(size(coords)) but must have at least one row."))
-        M >= 4 && throw(DimensionMismatch("'coords' has size $(size(coords)) but must have at most three rows:  [r...; azimuth...; elevation...]"))
-        D <= 0 && throw(DimensionMismatch("'coords' has size $(size(coords)) but must have at least one column"))
-
-        padded_coords = similar(coords, 3, D)
-        padded_coords[1:M, :] = coords
-
-        if M == 1
-            padded_coords = vcat(coords, zeros(eltype(coords), 2, D))
-        elseif M==2
-            padded_coords = vcat(coords, zeros(eltype(coords), 1, D))
-        else
-            padded_coords = vcat(coords, zeros(eltype(coords), 0, D))
-        end
-
-        return new{typeof(padded_coords)}(padded_coords)
-    end
+struct RAzEl{T, A<:AbstractMatrix{T}} <: SphericalWave
+    coords::A
 end
 
-# list of r
+Adapt.@adapt_structure RAzEl
+
+function RAzEl(coords::AbstractMatrix)
+    M, D = size(coords)
+    M <= 0 && throw(DimensionMismatch("'coords' has size $(size(coords)) but must have at least one row."))
+    M >= 4 && throw(DimensionMismatch("'coords' has size $(size(coords)) but must have at most three rows:  [range...; azimuth...; elevation...]"))
+    D <= 0 && throw(DimensionMismatch("'coords' has size $(size(coords)) but must have at least one column"))
+
+    padded_coords = similar(coords, eltype(coords), 3, D)
+    padded_coords[1:M, :] = coords
+
+    if M < 3
+        padded_coords[M+1:3, :] .= 0
+    end
+
+    return RAzEl{eltype(padded_coords), typeof(padded_coords)}(padded_coords)
+end
+
 function RAzEl(r_vec::AbstractVector)
     return RAzEl(reshape(r_vec, 1, :))
 end
 
-# list of r
 function RAzEl(r...)
     return RAzEl(collect(promote(r...)))
 end
