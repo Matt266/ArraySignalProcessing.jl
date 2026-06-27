@@ -1,5 +1,5 @@
 """
-capon(pa::AbstractPhasedArray, Rxx, f, ϕ, θ=0; fs=nothing, c=c_0)
+capon(am::AbstractArrayManifold, Rxx, angles, f, c=c_0; kwargs...)
 
 Calculates the capon spectrum for direction of arrival estimation.
 This is identically to steering a capon beamformer and measuring the 
@@ -8,7 +8,7 @@ and data is just more convenient for DoA estimation.
 
 arguments:
 ----------
-    pa: Array to evaluate for
+    am: Array (Manifold) to evaluate for
     Rxx: Covariance matrix (MxM)
     angles: 1xD or 2xD matrix of [azimuth; elevation] angles in radians
     c: Propagation speed (default: c_0)
@@ -21,8 +21,8 @@ References:
 -----------
 H. Krim and M. Viberg, ‘Two decades of array signal processing research: the parametric approach’, IEEE Signal Process. Mag., vol. 13, no. 4, pp. 67–94, Jul. 1996.
 """
-function capon(pa::AbstractPhasedArray, Rxx, angles, f, c=c_0; kwargs...)
-    A = steer(pa, angles, f, c; kwargs...)
+function capon(am::AbstractArrayManifold, Rxx, angles, f, c=c_0; kwargs...)
+    A = am(angles, f, c; kwargs...)
     #P = 1/(a'*inv(Rxx)*a)
     P = vec(1 ./ sum(conj(A) .* (inv(Rxx) * A), dims=1))
     return real(P)

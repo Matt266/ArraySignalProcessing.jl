@@ -1,11 +1,11 @@
 """
-wsf(pa::AbstractPhasedArray, Rxx, d, DoAs, f; fs=nothing, c=c_0, optimizer=NelderMead(), maxiters=1e3)
+wsf(am::AbstractArrayManifold, Rxx, d, DoAs, f; fs=nothing, c=c_0, optimizer=NelderMead(), maxiters=1e3)
 
 DoA estimation using weighted subspace fitting (WSF) .
 
 arguments:
 ----------
-    pa: AbstractPhasedArray to calculate the wsf estimation for
+    am: Array (Manifold) to calculate the wsf estimation for
     Rxx: covariance matrix of the array which is used for estimation
     DoAs: vector/matrix of initial DoAs as starting point for WSF
     f: center/operating frequency
@@ -23,7 +23,7 @@ H. Krim and M. Viberg, ‘Two decades of array signal processing research: the p
 
 M. Pesavento, M. Trinh-Hoang, and M. Viberg, ‘Three More Decades in Array Signal Processing Research: An optimization and structure exploitation perspective’, IEEE Signal Process. Mag., vol. 40, no. 4, pp. 92–106, Jun. 2023.
 """
-function wsf(pa::AbstractPhasedArray, Rxx, DoAs, f, c=c_0;
+function wsf(am::AbstractArrayManifold, Rxx, DoAs, f, c=c_0;
             optimizer = Optim.LBFGS(), steer_kwargs=(), problem_kwargs=(), solve_kwargs=())
     d = size(DoAs, 2)
     eigs = eigen(Rxx)
@@ -41,10 +41,10 @@ function wsf(pa::AbstractPhasedArray, Rxx, DoAs, f, c=c_0;
     Λest = Λs - σ²*I
     W = Λest^2*inv(Λs)
     
-    p = pa, Us, W, f, c
+    p = am, Us, W, f, c
     wsf_cost = function(angles, p)
-        pa, Us, W, f, c = p
-        A = steer(pa, angles, f, c; steer_kwargs...)
+        am, Us, W, f, c = p
+        A = am(angles, f, c; steer_kwargs...)
         PA = A*pinv(A) #TODO: check why the pinv() call here throws an error with CuArrys
         cost =  tr((I-PA)*Us*W*Us')
         return real(cost)

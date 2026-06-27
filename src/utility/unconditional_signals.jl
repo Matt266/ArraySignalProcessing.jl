@@ -35,10 +35,10 @@ function snr2nvar(SNR)
     return 10^-(SNR/10)
 end
 
-function unconditional_signals(pa::AbstractPhasedArray, Rss, N, SNR, angles, f, c=c_0; norm=true, kwargs...)
-    M = length(pa)
+function unconditional_signals(am::AbstractArrayManifold, Rss, N, SNR, angles, f, c=c_0; norm=true, kwargs...)
+    M = length(am)
 
-    A = steer(pa, angles, f, c; kwargs...)
+    A = am(angles, f, c; kwargs...)
     s = unconditional_signals(Rss, N; norm=norm, wtype=typeof(A))
     s = convert(typeof(A), s)
 
