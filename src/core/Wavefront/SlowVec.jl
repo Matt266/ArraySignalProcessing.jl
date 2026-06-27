@@ -1,5 +1,6 @@
 struct SlowVec{T, A<:AbstractMatrix{T}} <: PlaneWave
     coords::A
+    SlowVec{T, A}(coords::A) where {T, A<:AbstractMatrix{T}} = new{T, A}(coords)
 end
 
 Adapt.@adapt_structure SlowVec

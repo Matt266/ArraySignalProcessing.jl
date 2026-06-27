@@ -1,5 +1,6 @@
 struct AzEl{T, A<:AbstractMatrix{T}} <: PlaneWave
     coords::A
+    AzEl{T, A}(coords::A) where {T, A<:AbstractMatrix{T}} = new{T, A}(coords)
 end
 
 Adapt.@adapt_structure AzEl

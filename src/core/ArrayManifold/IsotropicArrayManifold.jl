@@ -1,5 +1,6 @@
 struct IsotropicArrayManifold{T<:AbstractMatrix} <: AbstractArrayManifold
     r::T
+    IsotropicArrayManifold{T}(r::T) where {T<:AbstractMatrix} = new{T}(r)
 end
 
 Adapt.@adapt_structure IsotropicArrayManifold

@@ -1,5 +1,6 @@
 struct WaveVec{T, A<:AbstractMatrix{T}} <: PlaneWave
     coords::A
+    WaveVec{T, A}(coords::A) where {T, A<:AbstractMatrix{T}} = new{T, A}(coords)
 end
 
 Adapt.@adapt_structure WaveVec
