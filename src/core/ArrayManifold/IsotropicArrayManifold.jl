@@ -1,6 +1,6 @@
-struct IsotropicArrayManifold{T<:AbstractMatrix} <: AbstractArrayManifold
-    r::T
-    IsotropicArrayManifold{T}(r::T) where {T<:AbstractMatrix} = new{T}(r)
+struct IsotropicArrayManifold{T, A<:AbstractMatrix{T}} <: AbstractArrayManifold
+    r::A
+    IsotropicArrayManifold{T, A}(r::A) where {T, A<:AbstractMatrix{T}} = new{T, A}(r)
 end
 
 Adapt.@adapt_structure IsotropicArrayManifold
@@ -15,12 +15,8 @@ function IsotropicArrayManifold(r::AbstractMatrix)
     padded_r = similar(r, 3, D)
     padded_r[1:M, :] = r
 
-    if M == 1
-        padded_r = vcat(r, zeros(eltype(r), 2, D))
-    elseif M == 2
-        padded_r = vcat(r, zeros(eltype(r), 1, D))
-    else
-        padded_r = vcat(r, zeros(eltype(r), 0, D))
+    if M < 3
+        padded_r[M+1:3, :] .= 0
     end
 
     return IsotropicArrayManifold{eltype(padded_r), typeof(padded_r)}(padded_r)
