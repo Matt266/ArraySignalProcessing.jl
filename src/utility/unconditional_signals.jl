@@ -47,6 +47,7 @@ function unconditional_signals(am::AbstractArrayManifold, Rss, N, SNR, angles, f
     # TODO: check if scaling SNR on a per sensor basis would be more meaningfull.
     #   e.g. (2.170) Optimum Array Processing - van Trees 2002 defines a per sensor input SNR,
     #   which seems to be the standard input SNR
+    # TODO: does RSS need scaling with tr(Rss) here as well?
     nvar = snr2nvar(SNR) * tr(A*Rss*A')/M
     n = sqrt(nvar/2)*(randn!(similar(A, M, N)) + 1im*randn!(similar(A, M, N)))
     n = convert(typeof(A), n)
