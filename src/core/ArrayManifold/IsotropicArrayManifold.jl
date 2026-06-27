@@ -42,8 +42,8 @@ H. L. Van Trees, Optimum array processing. Nashville, TN: John Wiley & Sons, 200
 """
 
 function (a::IsotropicArrayManifold)(angles::AzEl, f, c=c_0)
-    f_res = reshape(f, 1, 1, :, 1)
-    c_res = reshape(c, 1, 1, 1, :)
+    f_res = f isa Number ? f : reshape(f, 1, 1, :, 1)
+    c_res = c isa Number ? c : reshape(c, 1, 1, 1, :)
 
     k = convert.(promote_type(eltype(angles.coords), Float32), 2π .* f_res ./ c_res)
 
@@ -79,7 +79,7 @@ References:
 D. H. Johnson and D. E. Dudgeon, Array Signal Processing. Philadelphia, PA: Prentice Hall, 1993.
 """
 function (a::IsotropicArrayManifold)(angles::SlowVec, f, c=c_0)
-    f_res = reshape(f, 1, 1, :, 1)
+    res = f isa Number ? f : reshape(f, 1, 1, :, 1)
     ω = convert.(promote_type(eltype(angles.coords), Float32), 2π .* f_res)
     φ = a.r' * (ω * angles.coords)
     A_tensor = exp.(-1im .* φ)
@@ -94,8 +94,8 @@ Z. Ebadi, A. M. Molaei, M. A. B. Abbasi, S. Cotton, A. Tukmanov and O. Yurduseve
 """
 
 function (a::IsotropicArrayManifold)(angles::RAzEl, f, c=c_0)
-    f_res = reshape(f, 1, 1, :, 1)
-    c_res = reshape(c, 1, 1, 1, :)
+    f_res = f isa Number ? f : reshape(f, 1, 1, :, 1)
+    c_res = c isa Number ? c : reshape(c, 1, 1, 1, :)
 
     k = convert.(promote_type(eltype(angles.coords), Float32), 2π .* f_res ./ c_res)
 

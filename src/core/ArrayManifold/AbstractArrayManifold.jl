@@ -21,7 +21,7 @@ References:
 -----------
 H. L. Van Trees, Optimum array processing. Nashville, TN: John Wiley & Sons, 2002.
 """
-function (a::AbstractArrayManifold)(angles::AbstractMatrix, f, c=c_0; coords=AzEl)
+function (a::AbstractArrayManifold)(angles, f, c=c_0; coords=AzEl)
         return a(coords(angles), f, c)
 end
 
