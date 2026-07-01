@@ -134,3 +134,9 @@ function classical_crb(θw::AbstractVector, θu::AbstractVector, Kx, m; K=1)
     FIM_ww, FIM_wu, FIM_uw, FIM_uu = classical_fim(θw, θu, Kx, m; K=K)
     return (FIM_ww - FIM_wu * (FIM_uu \ FIM_uw)) \ I
 end
+
+#TODO: for γ = f(θ), FIM(θ) and CRB(θ) can be calculated from FIM(γ) and CRB(γ)
+# H. L. Van Trees, Optimum array processing. Nashville, TN: John Wiley & Sons, 2002.
+# (8.46) Matrix G with elements G_ip = ∂θ_p / ∂γ_i
+# (8.47) FIM[γ] = G * FIM[θ] * transpose(G)
+# (8.48) CRB[γ] = transpose(G^-1) * CRB[θ] * G^-1
