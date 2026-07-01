@@ -59,13 +59,22 @@ function classical_fim(θ::AbstractVector, Kx, m; K=1)
     # Reshape N^2 x P Jacobian to an N x (N*P) matrix
     ∂K = reshape(J_K, N, N * P)
     Kinv_∂K = reshape(K_val \ ∂K , N, N, P)
-    
+
     # compute tr(A * B) as vec(A^T)^T * vec(B) for all pairwise combinations (i, j) of P:
     Term1 = real.(
             transpose(reshape(permutedims(Kinv_∂K, (2, 1, 3)), N^2, P)) * reshape(Kinv_∂K, N^2, P)
             )
-    Term2 = 2 .* real.(J_m' * (K_val \ J_m))
-    return (Term1 .+ Term2) .* K
+
+    # Reshape (N*K) x P Jacobian to an N x (K*P) matrix
+    ∂m = reshape(J_m, N, K * P)
+    Kinv_∂m = K_val \ ∂m
+
+    Term2 = 2 .* real.(J_m' * reshape(Kinv_∂m, N * K, P))
+
+    # Since snapshots are independent, the FIM is additive over snapshots. Term2 includes sum over all snapshots.
+    # Term1 is constant over all snapshots and thus can be multiplied by K to account for all snapshots
+    # TODO make sure my understanding is correct at this point
+    return K .* Term1 .+ Term2
 end
 
 """
