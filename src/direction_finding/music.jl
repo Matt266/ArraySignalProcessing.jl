@@ -1,27 +1,24 @@
 """
-music(am::AbstractArrayManifold, Rxx, d, f, angles; c=c_0)
+music(A::AbstractMatrix, Rxx, d; W=I)
 
 Calculates the MUSIC spectrum for direction of arrival (DoA) estimation.
 
 arguments:
 ----------
-    am: Array (Manifold) for which the MUSIC spectrum is computed
+    A: Array Manifold Matrix to calculate the estimator for
     Rxx: Covariance matrix of the received signals
     d: Number of signal sources (model order)
-    f: Center/operating frequency
-    angles: 1xD vector or 2xD matrix of azimuth and elevation angles. For 1xD input, elevation is assumed zero.
+    W: Weighting matrix for the MUSIC algorithm (default: I)
     c: Propagation speed of the wave (default: c_0)
 
 References:
 -----------
 H. Krim and M. Viberg, ‘Two decades of array signal processing research: the parametric approach’, IEEE Signal Process. Mag., vol. 13, no. 4, pp. 67–94, Jul. 1996.
 """
-function music(am::AbstractArrayManifold, Rxx, d, angles, f, c=c_0; W=I, kwargs...)
+function music(A::AbstractMatrix, Rxx, d; W=I)
     eigs = eigen(Rxx)
     U = eigs.vectors[:, sortperm(abs.(eigs.values); rev=true)]
     Un = U[:, d+1:size(U)[2]]
-
-    A = am(angles, f, c; kwargs...)
 
     # weighted music
     #P = a'*a/(a'*Un*W*Un'*a)

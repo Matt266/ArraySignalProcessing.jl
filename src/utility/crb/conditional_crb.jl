@@ -65,7 +65,7 @@ function conditional_crb(s, SNR, am, θ; s_unwanted=true, nvar_unwanted=true)
 
     function Kx(θ_full)
         nvar_val = θ_full[idx_n][1]
-        return nvar_val * I(N)
+        return nvar_val * collect(I(N))
     end
     
     function m(θ_full)
@@ -77,9 +77,9 @@ function conditional_crb(s, SNR, am, θ; s_unwanted=true, nvar_unwanted=true)
     end
 
     if isnothing(θu)
-        return classical_crb(θw, Kx, m; K=1)
+        return classical_crb(θw, Kx, m; K=K)
     else
-        return classical_crb(θw, θu, Kx, m; K=1)
+        return classical_crb(θw, θu, Kx, m; K=K)
     end
 end
 
@@ -166,7 +166,7 @@ function conditional_crb(s, SNR, am, θw, θu; s_unwanted=true, nvar_unwanted=tr
 
     function Kx(θ_full)
         nvar_val = θ_full[idx_n][1]
-        return nvar_val * I(N)
+        return nvar_val * collect(I(N))
     end
     
     function m(θ_full)
@@ -178,5 +178,5 @@ function conditional_crb(s, SNR, am, θw, θu; s_unwanted=true, nvar_unwanted=tr
         return am(θw_val, θu_val) * s_mat
     end
 
-    return classical_crb(θw_combined, θu_combined, Kx, m; K=1)
+    return classical_crb(θw_combined, θu_combined, Kx, m; K=K)
 end

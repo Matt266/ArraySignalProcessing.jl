@@ -27,6 +27,18 @@ classical_log_likelihood(θ::AbstractVector, Kx, m, X) = begin
     return -num_snapshots*real(logdet(π*Kx_val)) - real(dot(X_c, Kx_val \ X_c))
 end
 
+function _complex_safe_jacobian(f, θ)
+    val = f(θ)
+    if eltype(val) <: Complex
+        # Split into real and imaginary outputs for Zygote, then recombine
+        J_real = Zygote.jacobian(x -> real.(f(x)), θ)[1]
+        J_imag = Zygote.jacobian(x -> imag.(f(x)), θ)[1]
+        return J_real .+ 1im .* J_imag
+    else
+        return Zygote.jacobian(f, θ)[1]
+    end
+end
+
 """
 classical_fim(θ, Kx, m; K=1)
 
@@ -50,10 +62,9 @@ function classical_fim(θ::AbstractVector, Kx, m; K=1)
     m_val = applicable(m, θ) ? m(θ) : m
     
     N = size(K_val, 1)
-
-    J_K_raw = applicable(Kx, θ) ? Zygote.jacobian(Kx, θ)[1] : nothing
+    J_K_raw = applicable(Kx, θ) ? _complex_safe_jacobian(Kx, θ) : nothing
     J_K = isnothing(J_K_raw) ? fill!(similar(K_val, N^2, P), 0) : J_K_raw
-    J_m_raw = applicable(m, θ) ? Zygote.jacobian(m, θ)[1] : nothing
+    J_m_raw = applicable(m, θ) ? _complex_safe_jacobian(m, θ) : nothing
     J_m = isnothing(J_m_raw) ? fill!(similar(m_val, length(m_val), P), 0) : J_m_raw
 
     # Reshape N^2 x P Jacobian to an N x (N*P) matrix

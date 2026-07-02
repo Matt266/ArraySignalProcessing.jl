@@ -35,6 +35,7 @@ function snr2nvar(SNR)
     return 10^-(SNR/10)
 end
 
+#TODO: replace am with Array Manifold Matrix A::AbstractMatrix
 function unconditional_signals(am::AbstractArrayManifold, Rss, N, SNR, angles, f, c=c_0; norm=true, kwargs...)
     M = length(am)
 

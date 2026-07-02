@@ -27,7 +27,7 @@ export  IsotropicArray, IsotropicArrayManifold, NestedArray, NestedArrayManifold
         dsb_weights, bartlett, mvdr_weights, mpdr_weights, capon_weights, capon, lcmv_weights, lcmp_weights,
         lcmv_gsc, lcmv, GeneralizedSidelobeCanceler, process, process!, LMS, RLS,
         whitenoise, diffnoise, esprit, music, unitary_esprit, lasso, λ_stable, omp, ols, bpdn,
-        aic, mdl, wsf, dml, sml, unconditional_signals, find_doas
+        aic, mdl, wsf, dml, sml, unconditional_signals, find_doas, conditional_crb
 
 c_0 = 299792458.0
 
