@@ -1,11 +1,11 @@
 """
-conditional_crb(s, nvar, am, θ; s_unwanted=true, nvar_unwanted=true)
+conditional_crb(s, SNR, am, θ; s_unwanted=true, nvar_unwanted=true)
 Calculates the conditional (nonrandom signal model) classical Cramér-Rao Bound (CRB) for a complex Gaussian random observation vector x.
 
 arguments:
 ---------
     s: DxK source signal matrix for K sample snapshots of D source signals
-    nvar: Noise variance σₙ²
+    SNR: signal-to-noise ratio in dB
     am: Array Manifold Matrix am(θ) as function of the parameter vector θ
     θ: parameter vector of the Array Manifold Matrix to evaluate the CRB
     K: number of sample snapshots (default is 1)
@@ -16,8 +16,9 @@ References:
 -----------
 H. L. Van Trees, Optimum array processing. Nashville, TN: John Wiley & Sons, 2002. (8.85), (8.200), (8.201), (8.202), (8.204), (8.205)
 """
-function conditional_crb(s, nvar, am, θ; s_unwanted=true, nvar_unwanted=true)
+function conditional_crb(s, SNR, am, θ; s_unwanted=true, nvar_unwanted=true)
     # number of sensors
+    nvar = snr2nvar(SNR)
     N = size(am(θ), 1)
     D, K = size(s)
     
@@ -63,16 +64,16 @@ function conditional_crb(s, nvar, am, θ; s_unwanted=true, nvar_unwanted=true)
     end
 
     function Kx(θ_full)
-        nvar = θ_full[idx_n][1]
-        return nvar * I(N)
+        nvar_val = θ_full[idx_n][1]
+        return nvar_val * I(N)
     end
     
     function m(θ_full)
-        θ = θ_full[idx_θ]
-        s_vec = θ_full[idx_s]
-        s_ri = reshape(s_vec, 2D, K)
-        s = s_ri[1:D, :] .+ 1im .* s_ri[D+1:end, :]
-        return am(θ) * s
+        θ_val = θ_full[idx_θ]
+        s_vec_val = θ_full[idx_s]
+        s_ri = reshape(s_vec_val, 2D, K)
+        s_mat = s_ri[1:D, :] .+ 1im .* s_ri[D+1:end, :]
+        return am(θ_val) * s_mat
     end
 
     if isnothing(θu)
@@ -83,13 +84,13 @@ function conditional_crb(s, nvar, am, θ; s_unwanted=true, nvar_unwanted=true)
 end
 
 """
-conditional_crb(θw::AbstractVector, θu::AbstractVector, Kx, m; K=1) 
+conditional_crb(s, SNR, am, θw, θu; s_unwanted=true, nvar_unwanted=true)
 Calculates the conditional (nonrandom signal model) classical Cramér-Rao Bound (CRB) for a complex Gaussian random observation vector x.
 
 arguments:
 ---------
     s: DxK source signal matrix for K sample snapshots of D source signals
-    nvar: Noise variance σₙ²
+    SNR: signal-to-noise ratio in dB
     am: Array Manifold Matrix am(θw, θu) as function of the parameter vectors θw and θu
     θw: vector of wanted parameters 
     θu: vector of unwanted parameters
@@ -100,5 +101,82 @@ References:
 -----------
 H. L. Van Trees, Optimum array processing. Nashville, TN: John Wiley & Sons, 2002.
 """
-function conditional_crb(s, nvar, am, θw, θu; s_unwanted=true, nvar_unwanted=true) 
+function conditional_crb(s, SNR, am, θw, θu; s_unwanted=true, nvar_unwanted=true) 
+    nvar = snr2nvar(SNR)
+
+    N = size(am(θw, θu), 1)
+    D, K = size(s)
+    
+    # Van Trees (8.202): F = [Re[F(1)]^T, Im[F(1)]^T, ...]^T
+    s_vec = vec(vcat(real(s), imag(s)))
+    nvar_vec = [nvar]
+    
+    L_θw = length(θw)
+    L_θu = length(θu)
+    L_s  = length(s_vec)
+    L_n  = 1
+
+    if s_unwanted && nvar_unwanted
+        θw_combined = copy(θw)
+        θu_combined = vcat(θu, s_vec, nvar_vec)
+        
+        L_gw = length(θw_combined)
+        
+        idx_θw = 1:L_θw
+        idx_θu = L_gw+1 : L_gw+L_θu
+        idx_s  = L_gw+L_θu+1 : L_gw+L_θu+L_s
+        idx_n  = L_gw+L_θu+L_s+1 : L_gw+L_θu+L_s+L_n
+        
+    elseif !s_unwanted && !nvar_unwanted
+        θw_combined = vcat(θw, s_vec, nvar_vec)
+        θu_combined = copy(θu)
+        
+        L_gw = length(θw_combined)
+        
+        idx_θw = 1:L_θw
+        idx_s  = L_θw+1 : L_θw+L_s
+        idx_n  = L_θw+L_s+1 : L_θw+L_s+L_n
+        
+        idx_θu = L_gw+1 : L_gw+L_θu
+        
+    elseif !s_unwanted && nvar_unwanted
+        θw_combined = vcat(θw, s_vec)
+        θu_combined = vcat(θu, nvar_vec)
+        
+        L_gw = length(θw_combined)
+        
+        idx_θw = 1:L_θw
+        idx_s  = L_θw+1 : L_θw+L_s
+        
+        idx_θu = L_gw+1 : L_gw+L_θu
+        idx_n  = L_gw+L_θu+1 : L_gw+L_θu+L_n
+        
+    else # s_unwanted && !nvar_unwanted
+        θw_combined = vcat(θw, nvar_vec)
+        θu_combined = vcat(θu, s_vec)
+        
+        L_gw = length(θw_combined)
+        
+        idx_θw = 1:L_θw
+        idx_n  = L_θw+1 : L_θw+L_n
+        
+        idx_θu = L_gw+1 : L_gw+L_θu
+        idx_s  = L_gw+L_θu+1 : L_gw+L_θu+L_s
+    end
+
+    function Kx(θ_full)
+        nvar_val = θ_full[idx_n][1]
+        return nvar_val * I(N)
+    end
+    
+    function m(θ_full)
+        θw_val = θ_full[idx_θw]
+        θu_val = θ_full[idx_θu]
+        s_vec_val = θ_full[idx_s]
+        s_ri = reshape(s_vec_val, 2D, K)
+        s_mat = s_ri[1:D, :] .+ 1im .* s_ri[D+1:end, :]
+        return am(θw_val, θu_val) * s_mat
+    end
+
+    return classical_crb(θw_combined, θu_combined, Kx, m; K=1)
 end
