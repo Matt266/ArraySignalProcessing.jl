@@ -1,32 +1,27 @@
 """
-conditional_crb(s, SNR, am, θ; s_unwanted=true, nvar_unwanted=true)
-Calculates the conditional (nonrandom signal model) classical Cramér-Rao Bound (CRB) for a complex Gaussian random observation vector x.
-
-Gaussian (unconditional) signal model for 
+classical_crb_conditional_signal(s, nvar, am, θ; s_unwanted=true, nvar_unwanted=true)
+Calculates the conditional (unkown nonrandom source signal) classical Cramér-Rao Bound (CRB) for a complex Gaussian random observation vector x.
 
 arguments:
 ---------
-    Rss: DxD covariance matrix of the source signals
-    SNR: signal-to-noise ratio in dB
+    s: DxK source signal matrix for K sample snapshots of D source signals
+    nvar: noise variance (nvar)
     am: Array Manifold Matrix am(θ) as function of the parameter vector θ
     θ: parameter vector of the Array Manifold Matrix to evaluate the CRB
-    K: number of sample snapshots (default is 1)
     s_unwanted: treat source signals s as unwanted parameter (default: true)
     nvar_unwanted: treat noise variance (nvar) as unwanted parameter (default: true)
 
 References:
 -----------
 H. L. Van Trees, Optimum array processing. Nashville, TN: John Wiley & Sons, 2002. (8.85), (8.200), (8.201), (8.202), (8.204), (8.205)
-Check text paragraph between (8.89) and (8.90): Sx for Kx, also signal s is a sample function
-from a zero-mean stationary complex Gaussian random process so m = 0
 """
-function unconditional_uss_crb(Rss, SNR, am, θ; s_unwanted=true, nvar_unwanted=true)
-        #TODO Implement
+function classical_crb_conditional_signal(s, nvar, am, θ::AbstractVector; s_unwanted=true, nvar_unwanted=true)
     # number of sensors
-    nvar = snr2nvar(SNR)
     N = size(am(θ), 1)
-    D = size(Rss)
+    D, K = size(s)
     
+    # Van Trees (8.202): F = [Re[F(1)]^T, Im[F(1)]^T, ...]^T
+    s_vec = vec(vcat(real(s), imag(s)))
     nvar_vec = [nvar]
     
     L_θ = length(θ)
@@ -76,24 +71,24 @@ function unconditional_uss_crb(Rss, SNR, am, θ; s_unwanted=true, nvar_unwanted=
         s_vec_val = θ_full[idx_s]
         s_ri = reshape(s_vec_val, 2D, K)
         s_mat = s_ri[1:D, :] .+ 1im .* s_ri[D+1:end, :]
-        return fill!(similar(eltype(s), length(m_val), P), 0) 
+        return am(θ_val) * s_mat
     end
 
     if isnothing(θu)
-        return classical_crb(θw, Kx, m; K=K)
+        return classical_crb(θw, Kx, m, K)
     else
-        return classical_crb(θw, θu, Kx, m; K=K)
+        return classical_crb(θw, θu, Kx, m, K)
     end
 end
 
 """
-conditional_crb(s, SNR, am, θw, θu; s_unwanted=true, nvar_unwanted=true)
-Calculates the conditional (nonrandom signal model) classical Cramér-Rao Bound (CRB) for a complex Gaussian random observation vector x.
+classical_crb_conditional_signal(s, nvar, am, θw, θu; s_unwanted=true, nvar_unwanted=true)
+Calculates the conditional (unkown nonrandom source signal) classical Cramér-Rao Bound (CRB) for a complex Gaussian random observation vector x.
 
 arguments:
 ---------
-    Rss: DxD covariance matrix of the source signals
-    SNR: signal-to-noise ratio in dB
+    s: DxK source signal matrix for K sample snapshots of D source signals
+    nvar: noise variance (nvar)
     am: Array Manifold Matrix am(θw, θu) as function of the parameter vectors θw and θu
     θw: vector of wanted parameters 
     θu: vector of unwanted parameters
@@ -103,16 +98,11 @@ arguments:
 References:
 -----------
 H. L. Van Trees, Optimum array processing. Nashville, TN: John Wiley & Sons, 2002.
-Check text paragraph between (8.89) and (8.90): Sx for Kx, also signal s is a sample function
-from a zero-mean stationary complex Gaussian random process so m = 0
 """
-function unconditional_crb(Rss, SNR, am, θw, θu; s_unwanted=true, nvar_unwanted=true) 
-    #TODO Implement
-    nvar = snr2nvar(SNR)
-
+function classical_crb_conditional_signal(s, nvar, am, θw::AbstractVector, θu::AbstractVector; s_unwanted=true, nvar_unwanted=true)
     N = size(am(θw, θu), 1)
-    D = size(Rss, 1)
-
+    D, K = size(s)
+    
     # Van Trees (8.202): F = [Re[F(1)]^T, Im[F(1)]^T, ...]^T
     s_vec = vec(vcat(real(s), imag(s)))
     nvar_vec = [nvar]
@@ -126,48 +116,48 @@ function unconditional_crb(Rss, SNR, am, θw, θu; s_unwanted=true, nvar_unwante
         θw_combined = copy(θw)
         θu_combined = vcat(θu, s_vec, nvar_vec)
         
-        L_gw = length(θw_combined)
+        L_wc = length(θw_combined)
         
         idx_θw = 1:L_θw
-        idx_θu = L_gw+1 : L_gw+L_θu
-        idx_s  = L_gw+L_θu+1 : L_gw+L_θu+L_s
-        idx_n  = L_gw+L_θu+L_s+1 : L_gw+L_θu+L_s+L_n
+        idx_θu = L_wc+1 : L_wc+L_θu
+        idx_s  = L_wc+L_θu+1 : L_wc+L_θu+L_s
+        idx_n  = L_wc+L_θu+L_s+1 : L_wc+L_θu+L_s+L_n
         
     elseif !s_unwanted && !nvar_unwanted
         θw_combined = vcat(θw, s_vec, nvar_vec)
         θu_combined = copy(θu)
         
-        L_gw = length(θw_combined)
+        L_wc = length(θw_combined)
         
         idx_θw = 1:L_θw
         idx_s  = L_θw+1 : L_θw+L_s
         idx_n  = L_θw+L_s+1 : L_θw+L_s+L_n
         
-        idx_θu = L_gw+1 : L_gw+L_θu
+        idx_θu = L_wc+1 : L_wc+L_θu
         
     elseif !s_unwanted && nvar_unwanted
         θw_combined = vcat(θw, s_vec)
         θu_combined = vcat(θu, nvar_vec)
         
-        L_gw = length(θw_combined)
+        L_wc = length(θw_combined)
         
         idx_θw = 1:L_θw
         idx_s  = L_θw+1 : L_θw+L_s
         
-        idx_θu = L_gw+1 : L_gw+L_θu
-        idx_n  = L_gw+L_θu+1 : L_gw+L_θu+L_n
+        idx_θu = L_wc+1 : L_wc+L_θu
+        idx_n  = L_wc+L_θu+1 : L_wc+L_θu+L_n
         
     else # s_unwanted && !nvar_unwanted
         θw_combined = vcat(θw, nvar_vec)
         θu_combined = vcat(θu, s_vec)
         
-        L_gw = length(θw_combined)
+        L_wc = length(θw_combined)
         
         idx_θw = 1:L_θw
         idx_n  = L_θw+1 : L_θw+L_n
         
-        idx_θu = L_gw+1 : L_gw+L_θu
-        idx_s  = L_gw+L_θu+1 : L_gw+L_θu+L_s
+        idx_θu = L_wc+1 : L_wc+L_θu
+        idx_s  = L_wc+L_θu+1 : L_wc+L_θu+L_s
     end
 
     function Kx(θ_full)
@@ -184,5 +174,5 @@ function unconditional_crb(Rss, SNR, am, θw, θu; s_unwanted=true, nvar_unwante
         return am(θw_val, θu_val) * s_mat
     end
 
-    return classical_crb(θw_combined, θu_combined, Kx, m; K=K)
+    return classical_crb(θw_combined, θu_combined, Kx, m, K)
 end

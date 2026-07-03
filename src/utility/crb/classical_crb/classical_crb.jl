@@ -55,7 +55,7 @@ References:
 -----------
 H. L. Van Trees, Optimum array processing. Nashville, TN: John Wiley & Sons, 2002. (8.34)
 """
-function classical_fim(θ::AbstractVector, Kx, m; K=1)
+function classical_fim(θ::AbstractVector, Kx, m, K::Number=1)
     P = length(θ)
 
     K_val = applicable(Kx, θ) ? Hermitian(Kx(θ)) : Hermitian(Kx)
@@ -106,8 +106,8 @@ References:
 -----------
 H. L. Van Trees, Optimum array processing. Nashville, TN: John Wiley & Sons, 2002. (8.40)
 """
-function classical_fim(θw::AbstractVector, θu::AbstractVector, Kx, m; K=1)
-    FIM = classical_fim(vcat(θw,θu), Kx, m; K=K)
+function classical_fim(θw::AbstractVector, θu::AbstractVector, Kx, m, K::Number=1)
+    FIM = classical_fim(vcat(θw,θu), Kx, m, K)
     # Partition to:
     # [ FIM_ww FIM_wu
     #   FIM_uw FIM_uu ]
@@ -130,8 +130,8 @@ References:
 -----------
 H. L. Van Trees, Optimum array processing. Nashville, TN: John Wiley & Sons, 2002. (8.25)
 """
-function classical_crb(θ::AbstractVector, Kx, m; K=1) 
-    return classical_fim(θ, Kx, m; K=K) \ I
+function classical_crb(θ::AbstractVector, Kx, m, K::Number=1) 
+    return classical_fim(θ, Kx, m, K) \ I
 end
 
 """
@@ -150,8 +150,8 @@ References:
 -----------
 H. L. Van Trees, Optimum array processing. Nashville, TN: John Wiley & Sons, 2002. (8.43)
 """
-function classical_crb(θw::AbstractVector, θu::AbstractVector, Kx, m; K=1) 
-    FIM_ww, FIM_wu, FIM_uw, FIM_uu = classical_fim(θw, θu, Kx, m; K=K)
+function classical_crb(θw::AbstractVector, θu::AbstractVector, Kx, m, K::Number=1) 
+    FIM_ww, FIM_wu, FIM_uw, FIM_uu = classical_fim(θw, θu, Kx, m, K)
     return (FIM_ww - FIM_wu * (FIM_uu \ FIM_uw)) \ I
 end
 
@@ -160,3 +160,8 @@ end
 # (8.46) Matrix G with elements G_ip = ∂θ_p / ∂γ_i
 # (8.47) FIM[γ] = G * FIM[θ] * transpose(G)
 # (8.48) CRB[γ] = transpose(G^-1) * CRB[θ] * G^-1
+
+include("classical_crb_conditional_signal.jl")
+include("classical_crb_gaussian_signal_known_spectrum.jl")
+include("classical_crb_gaussian_signal_unknown_spectrum.jl")
+include("classical_crb_gaussian_signal_unknown_power.jl")
