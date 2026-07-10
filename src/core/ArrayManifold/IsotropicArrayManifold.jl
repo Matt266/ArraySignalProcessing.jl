@@ -130,7 +130,7 @@ function (a::IsotropicArrayManifold)(angles::RAzEl, f, c=c_0)
     R = dropdims(sqrt.(sum(abs2, sens_pos .- src_pos; dims=1)), dims=1)
 
     amp = (r ./ R)
-    φ = -(k .* (R .- r))
+    φ = (k .* (R .- r))
 
     A_tensor = amp .* exp.(-1im .* φ)
     return reshape(A_tensor, size(A_tensor, 1), :)
